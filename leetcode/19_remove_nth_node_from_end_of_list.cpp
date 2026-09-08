@@ -8,7 +8,24 @@ struct ListNode {
 class Solution {
 public:
 	ListNode* removeNthFromEnd(ListNode* head, int n) {
-		// TODO: implement
-		return nullptr;
+		ListNode dummy = ListNode(0, head); 
+		ListNode* ptr = &dummy; 
+		int	r = 0; 
+
+		while(ptr->next){
+			r++; 
+			ptr = ptr->next; 
+		}
+
+		ptr = &dummy; 
+		int l = 0; 
+		
+		while(l < r-n){
+			ptr = ptr->next; 
+			l++; 
+		}
+		
+		ptr->next = ptr->next->next; 
+		return dummy.next; 
 	}
 };
