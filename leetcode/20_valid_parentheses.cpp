@@ -1,0 +1,11 @@
+#include <string>
+
+using namespace std;
+
+class Solution {
+public:
+	bool isValid(string s) {
+		// TODO: implement
+		return false;
+	}
+};
