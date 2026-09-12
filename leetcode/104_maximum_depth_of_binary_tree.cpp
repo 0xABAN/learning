@@ -1,3 +1,7 @@
+#include <algorithm>
+
+using namespace std; 
+
 struct TreeNode {
 	int val;
 	TreeNode* left;
@@ -10,7 +14,15 @@ struct TreeNode {
 class Solution {
 public:
 	int maxDepth(TreeNode* root) {
-		// TODO: implement
-		return 0;
+		const auto& dfs = [](auto&& self, TreeNode* node){
+			if (!node) return 0; 
+
+			int left = self(self, node->left);
+			int right = self(self, node->right); 
+
+			return max(left, right) + 1;
+		};
+		
+		return dfs(dfs, root);
 	}
 };
