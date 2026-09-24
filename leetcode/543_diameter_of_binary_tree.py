@@ -20,6 +20,21 @@ Output: 1
 Constraints:
 - The number of nodes is in the range [1, 10000].
 - -100 <= Node.val <= 100
+
+if we have no node: 
+    return 0 
+
+diameter = max(diameter, l + r) 
+return 1 + max(l, r)
+
+    1 
+   /  \ 
+  1    1
+ /  \
+1    1 
+
+left child returns longest path extending downward from it: 
+right child does the same 
 """
 
 from __future__ import annotations
@@ -39,8 +54,23 @@ class TreeNode:
 
 class Solution:
     def diameterOfBinaryTree(self, root: TreeNode | None) -> int:
-        raise NotImplementedError
+        self.diameter = 0 
 
+        def helper(node): 
+            if not node: 
+                return 0 
+
+            l = helper(node.left)
+            r = helper(node.right)
+            
+            self.diameter = max(self.diameter, l + r)
+            return 1 + max(l, r)
+
+        helper(root)
+        return self.diameter
+
+
+        
 
 def main() -> None:
     solution = Solution()
