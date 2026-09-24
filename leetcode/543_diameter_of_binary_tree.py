@@ -26,15 +26,6 @@ if we have no node:
 
 diameter = max(diameter, l + r) 
 return 1 + max(l, r)
-
-    1 
-   /  \ 
-  1    1
- /  \
-1    1 
-
-left child returns longest path extending downward from it: 
-right child does the same 
 """
 
 from __future__ import annotations
@@ -59,12 +50,15 @@ class Solution:
         def helper(node): 
             if not node: 
                 return 0 
-
-            l = helper(node.left)
-            r = helper(node.right)
+            
+            l = r = 0 
+            if node.left:
+                l = 1 + helper(node.left)
+            if node.right:
+                r = 1 + helper(node.right)
             
             self.diameter = max(self.diameter, l + r)
-            return 1 + max(l, r)
+            return max(l, r)
 
         helper(root)
         return self.diameter
