@@ -11,3 +11,6 @@ a.out
 
 # cmake build trees
 **/build/
+**/dist/
+
+node_modules/ 

@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext", 
+    "outDir": "dist/",
+    "types": ["node"], 
+  },
+  "files": [
+      "main.ts"
+    ]
+}

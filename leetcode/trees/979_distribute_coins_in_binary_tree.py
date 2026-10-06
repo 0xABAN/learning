@@ -31,6 +31,29 @@ Constraints:
 - 1 <= n <= 100
 - 0 <= Node.val <= n
 - The sum of all Node.val is n.
+
+
+- start from leaves 
+- if leaf.val > 1, pass it up to its parent 
+
+
+    3
+   / \
+  0   0 
+
+
+   0
+  / \  
+ 3   0
+ 
+flow = have - need 
+
+if > 0:     
+    surplus
+if < 0: 
+    missing nodes 
+
+regardless, abs(have - need) work must happen here 
 """
 
 from __future__ import annotations
@@ -50,8 +73,8 @@ class TreeNode:
 
 class Solution:
     def distributeCoins(self, root: TreeNode | None) -> int:
-        raise NotImplementedError
-
+        return 
+        
 
 def main() -> None:
     solution = Solution()
