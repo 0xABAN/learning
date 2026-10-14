@@ -1,145 +1,149 @@
-# C++ → NVIDIA Roadmap
+# Software Fundamentals: One-Year Roadmap
 
-Small native projects that stack: C++ fundamentals → vision → concurrency → CUDA → inference.
+Build a connected understanding of software, from programming languages and
+computer systems through networking, databases, and applied backend engineering.
+Learn C++ throughout, practice interview-style data structures and algorithms,
+and maintain a steady web development track.
 
-Start on a laptop. Add CUDA when Project 1 is solid.
+## Time Commitment
+
+Target at least **3 hours per day**, or **21 hours per week**. That is roughly
+1,100 hours over a year. Plan the core curriculum around 900 hours, leaving room
+for difficult topics, review, and interruptions.
+
+| Track | Hours per week | Focus |
+| --- | --- | --- |
+| Systems and software fundamentals | 11 | The current phase, including its exercises, labs, and projects |
+| C++ and DSA | 5 | Initially emphasize C++; gradually shift toward algorithmic problem-solving |
+| Web development | 4 | Browser fundamentals, then an interface for backend projects |
+| Review | 1 | Re-solve older problems and explain concepts without notes |
+
+Use substantial, uninterrupted blocks. There is no need to touch every subject
+every day. Project work belongs inside these allocations.
 
 ## Sequence
 
-| # | Project | Role |
-| --- | --------- | ------ |
-| 1 | Image-processing library | Learning foundation |
-| 2 | Camera calibration + marker pose | Learning / geometry |
-| 3 | Multithreaded video pipeline | Resume-grade systems |
-| 4 | CPU vs CUDA convolution | Resume-grade CUDA |
-| 5 | TensorRT inference wrapper | Resume-grade inference |
+These are emphasis blocks, not strict prerequisites. Build a basic web app early
+and revisit it as the underlying systems become clearer. Adjust the pace based
+on demonstrated understanding.
 
-**Robotics alternative for #2:** 2D occupancy-grid mapper from simulated LIDAR (toward ROS2 / Isaac / localization).
+| Period | Main focus | Evidence of understanding |
+| --- | --- | --- |
+| Months 1-2 | C++ foundations, compilation and linking, memory, debugging, basic data structures | Build a small program independently; diagnose memory and lifetime errors with a debugger and sanitizers |
+| Months 3-5 | Computer architecture essentials, operating systems, concurrency, networking | Build a small network server; explain what happens from an incoming connection to a response |
+| Months 6-8 | Databases and backend engineering | Build a database-backed service; investigate slow queries, concurrent updates, and failed requests |
+| Months 9-10 | Programming language concepts and runtime behavior | Implement a small interpreter with a deliberately limited language |
+| Months 11-12 | Distributed systems foundations and integration | Extend an existing project and test its behavior under failures and load |
 
-**Do not** start with YOLO + ROS2 + TensorRT + Isaac all at once. CPU first, understand data flow, then accelerate one stage.
+## Months 1-2: C++ and Execution Fundamentals
 
----
+- Learn the compile-and-link process and how to read compiler diagnostics.
+- Understand values, references, pointers, object lifetimes, ownership, and RAII.
+- Use standard containers, strings, functions, and classes comfortably.
+- Practice debugging, unit testing, and using sanitizers.
+- Connect memory layout and basic data structures to program behavior.
 
-## 1. Image-processing library (C++)
+Start with small programs that can be explained and debugged independently. The
+existing image-processing project can serve as a C++ exercise. Advanced template
+techniques and obscure language details can wait.
 
-CLI tool only — no GUI, no web.
+## Months 3-5: Computer Systems and Networking
 
-- Load/save PGM/PPM
-- Grayscale
-- Blur, Sobel edges, threshold, resize
-- Unit tests + benchmarks
-- C++17/20 + stdlib only at first
+- Learn how machine instructions, CPU caches, and memory access affect execution.
+- Study processes, threads, virtual memory, system calls, and file I/O.
+- Practice synchronization and investigate races and deadlocks.
+- Understand sockets, TCP and UDP, DNS, HTTP, and the role of TLS.
+- Build a small network server and trace the path from connection to response.
 
-**You learn:** `std::vector`, memory layout, RAII, file I/O, APIs, CMake, testing, basic vision.
+Make the work experimental: predict behavior, run the program, inspect the
+result, and investigate discrepancies. Include malformed input, disconnected
+clients, and concurrent requests in server exercises.
 
----
+## Months 6-8: Databases and Backend Engineering
 
-## 2. Camera calibration and marker pose
+- Learn SQL, relational modeling, indexes, and query plans.
+- Understand transactions, isolation, and concurrent updates.
+- Design APIs with explicit validation and error behavior.
+- Implement authentication and authorization using established libraries.
+- Practice integration testing, logging, metrics, and diagnosing failed requests.
 
-OpenCV (C++):
+Build a database-backed service and connect it to the web development track.
+Use a practical backend stack such as Python, FastAPI, and PostgreSQL. Continue
+using C++ for systems exercises without requiring every project to use it.
 
-- Chessboard webcam calibration
-- Undistort frames
-- Detect ArUco markers
-- Estimate 3D marker pose
-- Show reprojection error + pose stability
+## Months 9-10: Programming Languages
 
-**Vocabulary:** intrinsics/extrinsics, coordinate transforms, projection, reprojection error, pose estimation.
+- Study tokenization, parsing, and syntax trees.
+- Understand scope, name resolution, types, and evaluation.
+- Connect runtime behavior to memory management and execution.
+- Implement a small interpreter with a deliberately limited language.
 
-Teaches real geometry — not just calling a network.
+Aim to explain how source text becomes behavior and how language design choices
+affect programmers. Keep the language small enough to finish and test thoroughly.
 
----
+## Months 11-12: Distributed Systems and Integration
 
-## 3. Multithreaded real-time video pipeline
+- Study replication, consistency, caching, and partial failure.
+- Understand timeouts, retries, duplicate requests, and idempotency.
+- Extend an existing service with a feature that exercises these concepts.
+- Test failures and load; measure latency, throughput, and resource usage.
+- Document observed bottlenecks, limitations, and design tradeoffs.
 
-```text
-video input → capture thread → bounded queue → processing workers → output
-```
+Use measurements and failure experiments to justify changes to the system.
 
-C++ + OpenCV. Measure:
+## DSA Throughout the Year
 
-- FPS
-- p50 / p95 frame latency
-- Dropped frames
-- Queue depth
-- CPU utilization
+Build a conceptual foundation in complexity, invariants, recursion, and
+correctness. Cover arrays and hashing, linked lists, stacks and queues, binary
+search, trees, heaps, graphs, greedy algorithms, backtracking, and dynamic
+programming.
 
-**Tools:** `std::thread` / `std::jthread`, `std::mutex`, `std::condition_variable`, atomics, bounded queue.
+Study supporting discrete mathematics alongside the problems: logic, induction,
+combinatorics, and basic probability. Include this work in the DSA allocation.
 
-Connects vision to systems engineering, concurrency, and real-time constraints.
+Measure progress by whether a solution can be explained, its correctness
+justified, its complexity analyzed, and an unfamiliar variation solved. Return
+to older problems after time away.
 
----
+Follow `AGENTS.md` for exercises in this repository: new LeetCode scaffolds use
+Python, and existing C++ exercises remain available. Develop C++ fluency through
+language drills and systems projects alongside DSA practice.
 
-## 4. CPU vs CUDA image convolution
+## Web Development Throughout the Year
 
-One op from Project 1 (blur or Sobel), two implementations:
+Start with HTML, CSS, JavaScript, the DOM, events, forms, HTTP, accessibility, and
+browser security. Then add TypeScript and React. Build a basic app early and
+gradually connect it to the backend work.
 
-1. CPU C++
-2. CUDA kernel
+Understand browser behavior before investing heavily in framework-specific
+features. Use the browser's developer tools to inspect requests, state, layout,
+and errors.
 
-Compare:
+## Learning With LLMs
 
-- Correctness
-- Kernel time
-- Host ↔ device transfer time
-- End-to-end latency
-- Image sizes + block dimensions
+Attempt the work and explain the core reasoning before asking for a solution.
+Use LLMs for hints, counterexamples, quizzes, and critique. After receiving help,
+close the conversation and reconstruct the solution later.
 
-Profile with Nsight when you have an NVIDIA GPU.
+During weekly review, check whether the central concepts can be explained without
+notes and whether a small related task can be completed independently. Use gaps
+to choose the next review exercise.
 
-**You learn:** grids/blocks, device memory, thread indexing, sync, transfer cost, basic GPU optimization.
+## Starting Resources
 
-One kernel you can verify mathematically > giant neural-net CUDA project.
+- [LearnCpp](https://www.learncpp.com/): structured C++ study, including compilation, debugging, and language fundamentals.
+- [CMU Introduction to Computer Systems](https://www.cs.cmu.edu/~213/): a model for connecting machine code, memory, performance, networking, and concurrency.
+- [MIT Introduction to Algorithms](https://www.ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/syllabus/): algorithmic foundations; check the programming and discrete mathematics prerequisites before starting.
+- [MDN Core Learning Modules](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core): browser and web development fundamentals.
 
----
+Use resources to support the current phase and its exercises. Completing every
+listed course in full is not a requirement of this roadmap.
 
-## 5. Small TensorRT inference wrapper
+## Year-End Benchmark
 
-*After* 1–4, not before.
+Trace a request from the browser through the network, server, and database;
+explain the major tradeoffs; and investigate where it goes wrong. Pair that
+understanding with independent C++ programming and algorithmic problem-solving.
 
-- Export pretrained vision model: PyTorch → ONNX
-- Load with TensorRT
-- C++ inference wrapper
-- Pre/post-processing
-- Compare PyTorch vs ONNX Runtime vs TensorRT
-- Benchmark FP32 vs FP16 (if supported)
-
-Report: latency, throughput, memory, accuracy deltas.
-
-Maps to NCG postings that emphasize C++, Python, CUDA, TensorRT, performance analysis.
-
----
-
-## Resume bar (every project)
-
-- [ ] CMake
-- [ ] Clear C++ interfaces
-- [ ] Unit tests
-- [ ] Sanitizers
-- [ ] `-Wall -Wextra -Wpedantic`
-- [ ] Reproducible benchmark
-- [ ] Short architecture diagram
-- [ ] Failure cases + limitations
-- [ ] Measured performance results
-
-The win is not “used CUDA.” It is explaining **why** one path was faster, **where** the bottleneck was, and **what** tradeoff you made.
-
----
-
-## Target story
-
-> C++ real-time perception pipeline — camera geometry, multithreading, and a CUDA/TensorRT-accelerated stage.
-
-Fits NVIDIA computer-vision and robotics roles; builds on Amazon robotics background.
-
----
-
-## Current workspace
-
-Parallel track while building projects:
-
-- `cpp/basics/` — language drills
-- `leetcode/` — Python problem practice (existing C++ exercises retained)
-- nvim setup (lazy, treesitter, fzf-lua, blink.cmp)
-
-**Next project step when ready:** scaffold Project 1 under something like `cpp/projects/imgproc/`.
+The goal is a strong, connected foundation across the stack, with practical
+evidence of understanding at each layer.
