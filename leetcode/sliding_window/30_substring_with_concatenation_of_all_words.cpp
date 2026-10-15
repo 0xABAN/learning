@@ -37,20 +37,73 @@
  * - 1 <= words.length <= 5000
  * - 1 <= words[i].length <= 30
  * - s and words[i] consist of lowercase English letters.
+ *
+ * 1. convert words into a set  
+ * 2. if the window is in that set, it's a valid start. keep track of all starts
+ * let's use a hashmap to keep track of words found / window. if len(window) is len(words) then we found
+ * a match. increment l until we're at the next word start.
+ *
+ *
+ * s = "foohellobarfoo", ["bar", "foo"]
+ * bank = {bar, foo} 
+ * wind = {foo: 0} word, idx found
+ * then we find h, making  
+ *
+ *
+ *
+ * this is the major hurdle: skipping invalid starts
  */
 
 #include <algorithm>
 #include <cassert>
 #include <string>
 #include <vector>
+#include <unordered_set> 
+#include <unordered_map>
+#include <iostream> 
 
 using namespace std;
 
 class Solution {
 public:
     vector<int> findSubstring(string s, vector<string>& words) {
-        // TODO: implement
-        throw "not implemented";
+        vector<int> ans;
+        
+        int total = words.size(); 
+        unordered_map<string, int> bank; 
+        unordered_map<string, int> window; 
+        
+        for(int i = 0; i < total; i++) {
+            bank[words[i]]++; 
+        }
+        
+        int k = words[0].size();
+        for(int i = 0; i < k; i++) {
+            int l = i, r = i; 
+            int matches = 0; 
+            window = bank; 
+            while(r + k <= s.size()) {
+                string curr = s.substr(r, k); // k chars, starting from r
+                
+                if(!window.contains(curr)) { 
+                    l = r+k;
+                    window = bank; 
+                    matches = 0; 
+                } else {
+                    while(window[curr] == 0) {
+                        window[s.substr(l, k)]++; 
+                        l += k;
+                        matches--; 
+                    }
+                    matches++;
+                    window[curr]--; 
+                }
+                
+                if(matches == total) ans.push_back(l); 
+                r += k;  
+            }     
+        } 
+        return ans;
     }
 };
 
