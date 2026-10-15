@@ -28,14 +28,34 @@
 #include <cassert>
 #include <numeric>
 #include <vector>
+#include <unordered_map> 
 
 using namespace std;
 
 class Solution {
 public:
     int subarraysWithKDistinct(vector<int>& nums, int k) {
-        // TODO: implement
-        throw "not implemented";
+        auto get_windows = [&nums](int k) {
+            unordered_map<int, int> window;         
+            int ans = 0, l = 0; 
+            
+            for(int r = 0; r < nums.size(); r++) {
+                window[nums[r]]++; 
+                
+                while (window.size() > k) {
+                    int val = nums[l];
+                    window[val] -= 1; 
+
+                    if (window[val] == 0) window.erase(val);
+                    l++; 
+                }
+                ans += r - l + 1; // all windows with at most k elements (could have less)
+            }
+            
+            return ans; 
+        };
+
+        return get_windows(k) - get_windows(k-1); 
     }
 };
 
