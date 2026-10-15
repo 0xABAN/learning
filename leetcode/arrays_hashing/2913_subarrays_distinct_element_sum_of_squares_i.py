@@ -35,13 +35,32 @@ Examples:
 Constraints:
 - 1 <= nums.length <= 100
 - 1 <= nums[i] <= 100
+
+# of distinct values from i to j is distinct count of nusm[i to j]
+#
+[1, 2, 3] -> distinct count = 3 
+
+problem asks to find all subarrays, then find the sum of squares of them
 """
 
 
 class Solution:
     def sumCounts(self, nums: list[int]) -> int:
-        raise NotImplementedError
+        n = len(nums) 
+        ans = 0 
+        
+        for i in range(n): 
+            seen = set()
+            for j in range(i, n):
+                seen.add(nums[j])
+                ans += len(seen)**2
 
+        return ans
+                
+                    
+
+
+    
 
 def main() -> None:
     solution = Solution()
