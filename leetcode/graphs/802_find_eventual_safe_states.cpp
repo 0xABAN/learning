@@ -44,14 +44,48 @@
 #include <cassert>
 #include <numeric>
 #include <vector>
+#include <unordered_map>
+#include <deque> 
 
 using namespace std;
 
 class Solution {
 public:
     vector<int> eventualSafeNodes(vector<vector<int>>& graph) {
-        // TODO: implement
-        throw "not implemented";
+        unordered_map<int, vector<int>> g;  
+        unordered_map<int, int> in_edges; 
+        
+        for(int i = 0; i < graph.size(); i++) {
+            g[i]; 
+            in_edges[i] += graph[i].size();  
+            
+            for(int j : graph[i]) {
+                g[j].push_back(i); 
+            }
+        } 
+        
+        deque<int> q;         
+        for(const auto& [k, v] : in_edges) {
+            if(v == 0) q.push_back(k);
+        }
+
+        while(!q.empty()) {
+            int node = q.front(); 
+            q.pop_front();
+
+            for(int neighbor : g[node]) { 
+                in_edges[neighbor]--; 
+                if(in_edges[neighbor] == 0) {
+                    q.push_back(neighbor);
+                }
+            }
+        }
+        
+        vector<int> ans;
+        for(int i = 0; i < in_edges.size(); i++) {
+            if(in_edges[i] == 0) ans.push_back(i); 
+        }
+        return ans; 
     }
 };
 
