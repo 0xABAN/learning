@@ -89,8 +89,26 @@ public:
 class Solution {
 public:
     Node* cloneGraph(Node* node) {
-        // TODO: implement
-        throw "not implemented";
+        if(!node) return nullptr; 
+        
+        unordered_map<Node*, Node*> g; 
+        auto dfs = [&g](auto&& self, Node* res, Node* node) -> void {
+            for(Node* real : node->neighbors) {
+                if(!g.contains(real)) {
+                    Node* copy = new Node(real->val); 
+                    g[real] = copy;  
+
+                    self(self, copy, real);
+                }
+                res->neighbors.push_back(g[real]); 
+            }  
+        };
+        
+        Node* res = new Node(node->val);
+        g[node] = res; 
+        dfs(dfs, res, node);
+
+        return res; 
     }
 };
 

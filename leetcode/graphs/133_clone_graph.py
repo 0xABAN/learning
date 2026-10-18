@@ -58,8 +58,7 @@ Constraints:
 """
 
 from __future__ import annotations
-
-
+    
 class Node:
     def __init__(self, val: int = 0, neighbors: list[Node] | None = None) -> None:
         self.val = val
@@ -68,7 +67,23 @@ class Node:
 
 class Solution:
     def cloneGraph(self, node: Node | None) -> Node | None:
-        raise NotImplementedError
+        if not node: return None 
+
+        def dfs(res, node): 
+            for real in node.neighbors: 
+                if real not in g: 
+                    copy = Node(real.val)
+                    g[real] = copy
+                    
+                    dfs(copy, real)
+
+                res.neighbors.append(g[real]) 
+        
+        res = Node(node.val)
+        g = {node: res}
+        
+        dfs(res, node)
+        return res
 
 
 def build_graph(adj_list: list[list[int]]) -> Node | None:
