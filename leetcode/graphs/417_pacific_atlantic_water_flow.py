@@ -57,9 +57,52 @@ Constraints:
 
 class Solution:
     def pacificAtlantic(self, heights: list[list[int]]) -> list[list[int]]:
-        raise NotImplementedError
+        """
+        use dfs on pacific, then atlantic, and take their intersection 
+        """
+
+        m, n = len(heights), len(heights[0])     
+        nav = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        ans = []
+        
+        pac = set()
+        atl = set() 
+        
+        def dfs(r, c, ocean): 
+            if (r, c) in ocean: 
+                return
+            
+            ocean.add((r, c))
+            for dr, dc in nav: 
+                nr, nc = r+dr, c+dc 
+                
+                if (0 <= nr < m and 0 <= nc < n) and (heights[nr][nc] >= heights[r][c]): 
+                    dfs(nr, nc, ocean)
+
+                    
+        for c in range(n): 
+            dfs(0, c, pac)
+        
+        for r in range(m): 
+            dfs(r, 0, pac)
+
+        for c in range(n): 
+            dfs(m-1, c, atl)
+        
+        for r in range(m): 
+            dfs(r, n-1, atl)
+        
+        for r in range(m): 
+            for c in range(n): 
+                if (r, c) in pac and (r, c) in atl: 
+                    ans.append([r, c])
+
+        return ans
 
 
+
+
+        
 def main() -> None:
     solution = Solution()
 
