@@ -1,13 +1,14 @@
 /*
- * extract_vid.c
+ * extract_vid_tests.c
  *
  * Store a 60-second, 60 fps RGB video efficiently in C. No libraries beyond
  * the C standard library.
  *
- * Write struct Video and the video_* functions at the bottom of this file,
- * below the "YOUR IMPLEMENTATION" marker. Then build and run the tests:
+ * Write struct Video and the video_* functions declared below in
+ * extract_vid.c, next to this file. This file #includes it, so build and run
+ * only this file:
  *
- *     cc -std=c11 -O2 -Wall -Wextra extract_vid.c -o extract_vid && ./extract_vid
+ *     cc -std=c11 -O2 -Wall -Wextra extract_vid_tests.c -o extract_vid_tests && ./extract_vid_tests
  *
  * The tests check that:
  *   - every frame reads back byte-for-byte identical (lossless);
@@ -18,8 +19,9 @@
  *   - a full minute plays back (decodes) in less than a minute;
  *   - video_destroy() frees everything.
  *
- * Heap usage is measured by intercepting malloc/calloc/realloc/free in your
- * code, so keep the video's data on the heap (no large static arrays).
+ * Heap usage is measured by intercepting malloc/calloc/realloc/free in
+ * extract_vid.c, so keep the video's data on the heap (no large static arrays).
+ * extract_vid.c may have its own main(); it is renamed when included here.
  */
 
 #include <stddef.h>
@@ -506,14 +508,19 @@ int main(void) {
     return failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-/* ========================================================================= */
-/* YOUR IMPLEMENTATION                                                       */
-/*                                                                           */
-/* Define struct Video and the video_* functions below. Heap calls from here */
-/* on are routed through the tracker so the tests can measure your memory.   */
-/* ========================================================================= */
+/* ------------------------------------------------------------------------- */
+/* Implementation under test                                                 */
+/* ------------------------------------------------------------------------- */
 
+/*
+ * Heap calls in extract_vid.c go through the tracker so the tests can measure
+ * how much memory the video really holds. Its main(), if it has one, is
+ * renamed so it does not clash with the test runner's.
+ */
 #define malloc(size) tracked_malloc(size)
 #define calloc(count, size) tracked_calloc(count, size)
 #define realloc(block, size) tracked_realloc(block, size)
 #define free(block) tracked_free(block)
+#define main extract_vid_main
+
+#include "extract_vid.c"
