@@ -1,14 +1,11 @@
 /*
  * extract_vid_tests.c
  *
- * Store a 60-second, 60 fps RGB video efficiently in C. No libraries beyond
- * the C standard library.
+ * Tests for the video API in extract_vid.h, implemented in extract_vid.c.
+ * Build them together and run:
  *
- * Write struct Video and the video_* functions declared below in
- * extract_vid.c, next to this file. This file #includes it, so build and run
- * only this file:
- *
- *     cc -std=c11 -O2 -Wall -Wextra extract_vid_tests.c -o extract_vid_tests && ./extract_vid_tests
+ *     cc -std=c11 -O2 -Wall -Wextra -DEXTRACT_VID_TRACK_HEAP \
+ *         extract_vid.c extract_vid_tests.c -o extract_vid_tests && ./extract_vid_tests
  *
  * The tests check that:
  *   - every frame reads back byte-for-byte identical (lossless);
@@ -21,7 +18,7 @@
  *
  * Heap usage is measured by intercepting malloc/calloc/realloc/free in
  * extract_vid.c, so keep the video's data on the heap (no large static arrays).
- * extract_vid.c may have its own main(); it is renamed when included here.
+ * This file has the program's main(), so extract_vid.c must not define one.
  */
 
 #include <stddef.h>
@@ -31,30 +28,17 @@
 #include <string.h>
 #include <time.h>
 
-enum { FPS = 60, SECONDS = 60, FRAME_COUNT = FPS * SECONDS, CHANNELS = 3 };
+#include "extract_vid.h"
 
-/*
- * A frame is width * height pixels in row-major order, CHANNELS bytes per
- * pixel (R, G, B). Pixel (x, y) starts at byte (y * width + x) * CHANNELS.
- */
-typedef struct Video Video;
+#ifndef EXTRACT_VID_TRACK_HEAP
+#error "build with -DEXTRACT_VID_TRACK_HEAP so the tests can measure extract_vid.c's heap use"
+#endif
 
-/* Returns NULL if width or height is not positive, or if allocation fails. */
-Video *video_create(int width, int height);
-
-/* Copies one frame into the video. Returns 0 on success, -1 on failure. */
-int video_append_frame(Video *video, const unsigned char *rgb);
-
-/*
- * Writes frame `index` (0-based) into `rgb`. Returns 0 on success, -1 if
- * `index` is out of range.
- */
-int video_read_frame(Video *video, int index, unsigned char *rgb);
-
-int video_frame_count(const Video *video);
-
-/* Frees the video and everything it owns. Passing NULL does nothing. */
-void video_destroy(Video *video);
+/* extract_vid.h routes heap calls to the tracker below; the tests themselves use the real allocator. */
+#undef malloc
+#undef calloc
+#undef realloc
+#undef free
 
 /* ------------------------------------------------------------------------- */
 /* Heap tracker                                                              */
@@ -262,6 +246,8 @@ static void check_minute(Scene scene, int width, int height, size_t heap_budget)
     size_t stored = heap_live_bytes - baseline;
     printf("    stored %zu bytes = %.2f%% of raw %zu (budget %zu)\n",
            stored, 100.0 * stored / raw, raw, heap_budget);
+    CHECK(stored > 0, "no heap use was seen; extract_vid.c must #include \"extract_vid.h\" "
+                      "and keep the video on the heap");
     CHECK(stored <= heap_budget, "video holds %zu heap bytes, budget is %zu", stored, heap_budget);
 
     clock_t playback_start = clock();
@@ -507,20 +493,3 @@ int main(void) {
     printf("\n%d/%d tests passed\n", test_count - failures, test_count);
     return failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-/* ------------------------------------------------------------------------- */
-/* Implementation under test                                                 */
-/* ------------------------------------------------------------------------- */
-
-/*
- * Heap calls in extract_vid.c go through the tracker so the tests can measure
- * how much memory the video really holds. Its main(), if it has one, is
- * renamed so it does not clash with the test runner's.
- */
-#define malloc(size) tracked_malloc(size)
-#define calloc(count, size) tracked_calloc(count, size)
-#define realloc(block, size) tracked_realloc(block, size)
-#define free(block) tracked_free(block)
-#define main extract_vid_main
-
-#include "extract_vid.c"
