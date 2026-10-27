@@ -1,5 +1,0 @@
--xc
--std=c11
--Wall
--Wextra
--DEXTRACT_VID_TRACK_HEAP
