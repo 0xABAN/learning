@@ -1,17 +1,12 @@
-/**
- * pointer + dynamic storage 
- *
- * */
-
 class IntVector {
 public: 
   void push_back(int val); 
-  int at(int i);
-  int size();
+  int at(int i); 
+  int size(); 
   
+  ~IntVector() { delete[] buf; }
 private: 
-  int allowed = 1; 
   int n = 0; 
-  int* buf = new int[allowed]; 
-};
-
+  int cap = 1; 
+  int* buf = new int[cap]; 
+}; 

@@ -1,6 +1,5 @@
 #include "map.h"
 
-
 void Map::put(int key, int val) {
   int bucket = abs(key % slots);
   for(int i = 0; i < buf[bucket].size(); i++){

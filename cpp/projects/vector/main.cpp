@@ -1,14 +1,15 @@
 #include <iostream>
+#include "int_vector.h" 
 
-#include "int_vector.h"
 
 int main() {
   IntVector v; 
-  v.push_back(5); 
-  v.push_back(10);  
   
-  std::cout << v.at(0) << "\n"; 
-  std::cout << v.size();  
+  for(int i = 0; i < 20; i++) {
+    v.push_back(i); 
+
+    std::cout << "size: " << v.size() << ", val: " << v.at(i) << "\n"; 
+  }
   
   return 0; 
 }
