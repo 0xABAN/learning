@@ -16,11 +16,11 @@ Matrix Matrix::identity(std::size_t) {
     throw std::logic_error("not implemented");
 }
 
-std::size_t Matrix::rows() const {
+std::size_t Matrix::rows() {
     throw std::logic_error("not implemented");
 }
 
-std::size_t Matrix::cols() const {
+std::size_t Matrix::cols() {
     throw std::logic_error("not implemented");
 }
 
@@ -28,79 +28,75 @@ double& Matrix::at(std::size_t, std::size_t) {
     throw std::logic_error("not implemented");
 }
 
-double Matrix::at(std::size_t, std::size_t) const {
+bool operator==(Matrix, Matrix) {
     throw std::logic_error("not implemented");
 }
 
-bool operator==(const Matrix&, const Matrix&) {
+Matrix operator+(Matrix, Matrix) {
     throw std::logic_error("not implemented");
 }
 
-Matrix operator+(const Matrix&, const Matrix&) {
+Matrix operator-(Matrix, Matrix) {
     throw std::logic_error("not implemented");
 }
 
-Matrix operator-(const Matrix&, const Matrix&) {
+Matrix operator*(double, Matrix) {
     throw std::logic_error("not implemented");
 }
 
-Matrix operator*(double, const Matrix&) {
+Matrix operator*(Matrix, double) {
     throw std::logic_error("not implemented");
 }
 
-Matrix operator*(const Matrix&, double) {
+Matrix transpose(Matrix) {
     throw std::logic_error("not implemented");
 }
 
-Matrix transpose(const Matrix&) {
+double trace(Matrix) {
     throw std::logic_error("not implemented");
 }
 
-double trace(const Matrix&) {
+Matrix operator*(Matrix, Matrix) {
     throw std::logic_error("not implemented");
 }
 
-Matrix operator*(const Matrix&, const Matrix&) {
+Matrix power(Matrix, unsigned long long) {
     throw std::logic_error("not implemented");
 }
 
-Matrix power(const Matrix&, unsigned long long) {
+double determinant(Matrix) {
     throw std::logic_error("not implemented");
 }
 
-double determinant(const Matrix&) {
+Matrix rref(Matrix) {
     throw std::logic_error("not implemented");
 }
 
-Matrix rref(const Matrix&) {
+std::size_t rank(Matrix) {
     throw std::logic_error("not implemented");
 }
 
-std::size_t rank(const Matrix&) {
+Matrix inverse(Matrix) {
     throw std::logic_error("not implemented");
 }
 
-Matrix inverse(const Matrix&) {
+Matrix solve(Matrix, Matrix) {
     throw std::logic_error("not implemented");
 }
 
-Matrix solve(const Matrix&, const Matrix&) {
+LU lu_decompose(Matrix) {
     throw std::logic_error("not implemented");
 }
 
-LU lu_decompose(const Matrix&) {
+QR qr_decompose(Matrix) {
     throw std::logic_error("not implemented");
 }
 
-QR qr_decompose(const Matrix&) {
+Matrix least_squares(Matrix, Matrix) {
     throw std::logic_error("not implemented");
 }
 
-Matrix least_squares(const Matrix&, const Matrix&) {
-    throw std::logic_error("not implemented");
-}
-
-std::vector<double> symmetric_eigenvalues(const Matrix&) {
+std::vector<double> symmetric_eigenvalues(Matrix) {
     throw std::logic_error("not implemented");
 }
 
