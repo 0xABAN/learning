@@ -74,7 +74,7 @@ Matrix reference_product(const Matrix& a, const Matrix& b) {
     for (std::size_t row = 0; row < a.rows(); row++) {
         for (std::size_t col = 0; col < b.cols(); col++) {
             for (std::size_t k = 0; k < a.cols(); k++) {
-                product.set(row, col, product.at(row, col) + a.at(row, k) * b.at(k, col));
+                product.at(row, col) += a.at(row, k) * b.at(k, col);
             }
         }
     }
@@ -85,7 +85,7 @@ Matrix reference_difference(const Matrix& a, const Matrix& b) {
     Matrix difference(a.rows(), a.cols());
     for (std::size_t row = 0; row < a.rows(); row++) {
         for (std::size_t col = 0; col < a.cols(); col++) {
-            difference.set(row, col, a.at(row, col) - b.at(row, col));
+            difference.at(row, col) = a.at(row, col) - b.at(row, col);
         }
     }
     return difference;
@@ -95,7 +95,7 @@ Matrix reference_transpose(const Matrix& m) {
     Matrix transposed(m.cols(), m.rows());
     for (std::size_t row = 0; row < m.rows(); row++) {
         for (std::size_t col = 0; col < m.cols(); col++) {
-            transposed.set(col, row, m.at(row, col));
+            transposed.at(col, row) = m.at(row, col);
         }
     }
     return transposed;
@@ -119,7 +119,7 @@ Matrix random_matrix(std::size_t rows, std::size_t cols, std::uint32_t seed) {
     Matrix m(rows, cols);
     for (std::size_t row = 0; row < rows; row++) {
         for (std::size_t col = 0; col < cols; col++) {
-            m.set(row, col, random.next());
+            m.at(row, col) = random.next();
         }
     }
     return m;
@@ -128,17 +128,17 @@ Matrix random_matrix(std::size_t rows, std::size_t cols, std::uint32_t seed) {
 Matrix diagonally_dominant(std::size_t n, std::uint32_t seed) {
     Matrix m = random_matrix(n, n, seed);
     for (std::size_t i = 0; i < n; i++) {
-        m.set(i, i, static_cast<double>(n) + 1.0);
+        m.at(i, i) = static_cast<double>(n) + 1.0;
     }
     return m;
 }
 
 Matrix rotation(std::size_t n, std::size_t i, std::size_t j, double angle) {
     Matrix m = Matrix::identity(n);
-    m.set(i, i, std::cos(angle));
-    m.set(j, j, std::cos(angle));
-    m.set(i, j, -std::sin(angle));
-    m.set(j, i, std::sin(angle));
+    m.at(i, i) = std::cos(angle);
+    m.at(j, j) = std::cos(angle);
+    m.at(i, j) = -std::sin(angle);
+    m.at(j, i) = std::sin(angle);
     return m;
 }
 
@@ -184,14 +184,15 @@ void test_list_constructor_fills_rows_in_order() {
           "{{-7.5}} should be 1 x 1 holding -7.5");
 }
 
-void test_set_and_at() {
+void test_at_reads_and_writes_entries() {
     Matrix m(2, 2);
-    m.set(1, 0, 7);
-    m.set(0, 1, -2.5);
+    m.at(1, 0) = 7;
+    m.at(0, 1) = -2.5;
 
-    CHECK(m.at(1, 0) == 7, "after setting (1, 0) to 7, it reads %g", m.at(1, 0));
-    CHECK(m.at(0, 1) == -2.5, "after setting (0, 1) to -2.5, it reads %g", m.at(0, 1));
-    CHECK(m.at(0, 0) == 0 && m.at(1, 1) == 0, "setting two entries changed another one");
+    const Matrix& view = m;
+    CHECK(view.at(1, 0) == 7, "after writing 7 to (1, 0), it reads %g", view.at(1, 0));
+    CHECK(view.at(0, 1) == -2.5, "after writing -2.5 to (0, 1), it reads %g", view.at(0, 1));
+    CHECK(view.at(0, 0) == 0 && view.at(1, 1) == 0, "writing two entries changed another one");
 }
 
 void test_identity() {
@@ -229,6 +230,7 @@ void test_rejects_empty_or_ragged_rows() {
 
 void test_rejects_out_of_range_indexes() {
     Matrix m(2, 3);
+    const Matrix& view = m;
     std::size_t huge = static_cast<std::size_t>(-1);
 
     CHECK_THROWS(std::out_of_range, m.at(2, 0));
@@ -236,16 +238,16 @@ void test_rejects_out_of_range_indexes() {
     CHECK_THROWS(std::out_of_range, m.at(2, 3));
     CHECK_THROWS(std::out_of_range, m.at(huge, 0));
     CHECK_THROWS(std::out_of_range, m.at(0, huge));
-    CHECK_THROWS(std::out_of_range, m.set(2, 0, 1));
-    CHECK_THROWS(std::out_of_range, m.set(0, 3, 1));
-    CHECK_THROWS(std::out_of_range, m.set(huge, huge, 1));
+    CHECK_THROWS(std::out_of_range, view.at(2, 0));
+    CHECK_THROWS(std::out_of_range, view.at(0, 3));
+    CHECK_THROWS(std::out_of_range, view.at(huge, huge));
 }
 
 void test_copies_are_independent() {
     Matrix original{{1, 2}, {3, 4}};
 
     Matrix copy = original;
-    copy.set(0, 0, 9);
+    copy.at(0, 0) = 9;
     CHECK(original.at(0, 0) == 1, "changing a copy changed the original");
     CHECK(copy.at(1, 0) == 3, "a copy should keep the original's entries");
 
@@ -255,7 +257,7 @@ void test_copies_are_independent() {
           assigned.rows(), assigned.cols());
     CHECK(assigned.at(0, 1) == 2, "assignment should copy the entries");
 
-    assigned.set(1, 1, 0);
+    assigned.at(1, 1) = 0;
     CHECK(original.at(1, 1) == 4, "changing an assigned copy changed the original");
 }
 
@@ -530,11 +532,11 @@ void test_determinant_of_10x10_is_fast() {
     for (std::size_t row = 0; row < n; row++) {
         for (std::size_t col = 0; col < n; col++) {
             if (col < row) {
-                lower.set(row, col, random.next());
+                lower.at(row, col) = random.next();
             } else if (col > row) {
-                upper.set(row, col, random.next());
+                upper.at(row, col) = random.next();
             } else {
-                upper.set(row, col, upper_diagonal[row % 3]);
+                upper.at(row, col) = upper_diagonal[row % 3];
             }
         }
     }
@@ -1008,7 +1010,7 @@ void test_eigenvalues_of_a_rotated_diagonal_matrix() {
     Matrix d(5, 5);
     const double diagonal[] = {5, -2, 0.5, 3, -2};
     for (std::size_t i = 0; i < 5; i++) {
-        d.set(i, i, diagonal[i]);
+        d.at(i, i) = diagonal[i];
     }
 
     Matrix q = Matrix::identity(5);
@@ -1030,10 +1032,10 @@ void test_eigenvalues_of_20x20_second_difference() {
     std::vector<double> expected;
 
     for (std::size_t i = 0; i < n; i++) {
-        m.set(i, i, 2);
+        m.at(i, i) = 2;
         if (i + 1 < n) {
-            m.set(i, i + 1, -1);
-            m.set(i + 1, i, -1);
+            m.at(i, i + 1) = -1;
+            m.at(i + 1, i) = -1;
         }
         expected.push_back(2 - 2 * std::cos(static_cast<double>(i + 1) * pi / (n + 1)));
     }
@@ -1076,7 +1078,7 @@ struct Test {
 const Test kTests[] = {
     {1, "shape constructor fills zeros", test_shape_constructor_fills_zeros},
     {1, "list constructor fills rows in order", test_list_constructor_fills_rows_in_order},
-    {1, "set and at", test_set_and_at},
+    {1, "at reads and writes entries", test_at_reads_and_writes_entries},
     {1, "identity", test_identity},
     {1, "rejects zero rows or columns", test_rejects_zero_rows_or_columns},
     {1, "rejects empty or ragged rows", test_rejects_empty_or_ragged_rows},
