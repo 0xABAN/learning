@@ -3,12 +3,15 @@
 
 /*
  * Matrix algebra exercises in nine levels of increasing difficulty. Implement
- * each level in matrix.cpp, then build and run the tests:
+ * each level in matrix.cpp. Set up the build once from this folder:
  *
- *     c++ -std=c++23 -g -Wall -Wextra -fsanitize=address,undefined \
- *         matrix.cpp matrix_tests.cpp -o matrix_tests && ./matrix_tests
+ *     cmake -B build
  *
- * Pass a level to run only its tests, e.g. ./matrix_tests 3.
+ * then build and run the tests:
+ *
+ *     cmake --build build && ./build/matrix_tests
+ *
+ * Pass a level to run only its tests, e.g. ./build/matrix_tests 3.
  *
  * Every matrix has at least one row and one column, and its entries are
  * doubles. Rows and columns are numbered from 0. The tests accept results

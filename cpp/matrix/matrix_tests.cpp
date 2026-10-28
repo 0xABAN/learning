@@ -1,14 +1,17 @@
 /*
  * matrix_tests.cpp
  *
- * Tests for the exercises in matrix.h, grouped by level. Build them with your
- * implementation in matrix.cpp and run:
+ * Tests for the exercises in matrix.h, grouped by level. Set up the build once
+ * from this folder:
  *
- *     c++ -std=c++23 -g -Wall -Wextra -fsanitize=address,undefined \
- *         matrix.cpp matrix_tests.cpp -o matrix_tests && ./matrix_tests
+ *     cmake -B build
  *
- * Pass a level to run only its tests, e.g. ./matrix_tests 3. A function that
- * still throws "not implemented" fails every test that calls it.
+ * then build them with your implementation in matrix.cpp and run:
+ *
+ *     cmake --build build && ./build/matrix_tests
+ *
+ * Pass a level to run only its tests, e.g. ./build/matrix_tests 3. A function
+ * that still throws "not implemented" fails every test that calls it.
  */
 
 #include "matrix.h"
