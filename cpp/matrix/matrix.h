@@ -20,8 +20,8 @@ public:
     std::size_t rows() const;
     std::size_t cols() const;
 
-    double& at(std::size_t row, std::size_t col);
     double at(std::size_t row, std::size_t col) const;
+    void set(std::size_t row, std::size_t col, double value);
 
 private:
 };

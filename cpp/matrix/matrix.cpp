@@ -24,11 +24,11 @@ std::size_t Matrix::cols() const {
     throw std::logic_error("not implemented");
 }
 
-double& Matrix::at(std::size_t, std::size_t) {
+double Matrix::at(std::size_t, std::size_t) const {
     throw std::logic_error("not implemented");
 }
 
-double Matrix::at(std::size_t, std::size_t) const {
+void Matrix::set(std::size_t, std::size_t, double) {
     throw std::logic_error("not implemented");
 }
 
