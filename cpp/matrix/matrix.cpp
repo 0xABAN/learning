@@ -4,165 +4,104 @@
 
 namespace linalg {
 
-/* ------------------------------------------------------------------------- */
-/* Level 1: the Matrix type                                                  */
-/* ------------------------------------------------------------------------- */
-
-Matrix::Matrix(std::size_t /*rows*/, std::size_t /*cols*/) {
-    // TODO: implement
+Matrix::Matrix(std::size_t, std::size_t) {
     throw std::logic_error("not implemented");
 }
 
-Matrix::Matrix(std::initializer_list<std::initializer_list<double>> /*rows*/) {
-    // TODO: implement
+Matrix::Matrix(std::initializer_list<std::initializer_list<double>>) {
     throw std::logic_error("not implemented");
 }
 
-Matrix Matrix::identity(std::size_t /*n*/) {
-    // TODO: implement
+Matrix Matrix::identity(std::size_t) {
     throw std::logic_error("not implemented");
 }
 
 std::size_t Matrix::rows() const {
-    // TODO: implement
     throw std::logic_error("not implemented");
 }
 
 std::size_t Matrix::cols() const {
-    // TODO: implement
     throw std::logic_error("not implemented");
 }
 
-double& Matrix::at(std::size_t /*row*/, std::size_t /*col*/) {
-    // TODO: implement
+double& Matrix::at(std::size_t, std::size_t) {
     throw std::logic_error("not implemented");
 }
 
-double Matrix::at(std::size_t /*row*/, std::size_t /*col*/) const {
-    // TODO: implement
+double Matrix::at(std::size_t, std::size_t) const {
     throw std::logic_error("not implemented");
 }
 
-bool operator==(const Matrix& /*a*/, const Matrix& /*b*/) {
-    // TODO: implement
+bool operator==(const Matrix&, const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 2: entry-wise operations                                            */
-/* ------------------------------------------------------------------------- */
-
-Matrix operator+(const Matrix& /*a*/, const Matrix& /*b*/) {
-    // TODO: implement
+Matrix operator+(const Matrix&, const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-Matrix operator-(const Matrix& /*a*/, const Matrix& /*b*/) {
-    // TODO: implement
+Matrix operator-(const Matrix&, const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-Matrix operator*(double /*scalar*/, const Matrix& /*m*/) {
-    // TODO: implement
+Matrix operator*(double, const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-Matrix operator*(const Matrix& /*m*/, double /*scalar*/) {
-    // TODO: implement
+Matrix operator*(const Matrix&, double) {
     throw std::logic_error("not implemented");
 }
 
-Matrix transpose(const Matrix& /*m*/) {
-    // TODO: implement
+Matrix transpose(const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-double trace(const Matrix& /*m*/) {
-    // TODO: implement
+double trace(const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 3: multiplication and powers                                        */
-/* ------------------------------------------------------------------------- */
-
-Matrix operator*(const Matrix& /*a*/, const Matrix& /*b*/) {
-    // TODO: implement
+Matrix operator*(const Matrix&, const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-Matrix power(const Matrix& /*m*/, unsigned long long /*exponent*/) {
-    // TODO: implement
+Matrix power(const Matrix&, unsigned long long) {
     throw std::logic_error("not implemented");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 4: determinants                                                     */
-/* ------------------------------------------------------------------------- */
-
-double determinant(const Matrix& /*m*/) {
-    // TODO: implement
+double determinant(const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 5: row reduction and rank                                           */
-/* ------------------------------------------------------------------------- */
-
-Matrix rref(const Matrix& /*m*/) {
-    // TODO: implement
+Matrix rref(const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-std::size_t rank(const Matrix& /*m*/) {
-    // TODO: implement
+std::size_t rank(const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 6: inverses and linear systems                                      */
-/* ------------------------------------------------------------------------- */
-
-Matrix inverse(const Matrix& /*m*/) {
-    // TODO: implement
+Matrix inverse(const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-Matrix solve(const Matrix& /*a*/, const Matrix& /*b*/) {
-    // TODO: implement
+Matrix solve(const Matrix&, const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 7: LU decomposition                                                 */
-/* ------------------------------------------------------------------------- */
-
-LU lu_decompose(const Matrix& /*m*/) {
-    // TODO: implement
+LU lu_decompose(const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 8: QR decomposition and least squares                               */
-/* ------------------------------------------------------------------------- */
-
-QR qr_decompose(const Matrix& /*m*/) {
-    // TODO: implement
+QR qr_decompose(const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-Matrix least_squares(const Matrix& /*a*/, const Matrix& /*b*/) {
-    // TODO: implement
+Matrix least_squares(const Matrix&, const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 9: eigenvalues of symmetric matrices                                */
-/* ------------------------------------------------------------------------- */
-
-std::vector<double> symmetric_eigenvalues(const Matrix& /*m*/) {
-    // TODO: implement
+std::vector<double> symmetric_eigenvalues(const Matrix&) {
     throw std::logic_error("not implemented");
 }
 
-}  // namespace linalg
+}

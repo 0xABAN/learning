@@ -1,19 +1,3 @@
-/*
- * matrix_tests.cpp
- *
- * Tests for the exercises in matrix.h, grouped by level. Set up the build once
- * from this folder:
- *
- *     cmake -B build
- *
- * then build them with your implementation in matrix.cpp and run:
- *
- *     cmake --build build && ./build/matrix_tests
- *
- * Pass a level to run only its tests, e.g. ./build/matrix_tests 3. A function
- * that still throws "not implemented" fails every test that calls it.
- */
-
 #include "matrix.h"
 
 #include <algorithm>
@@ -31,13 +15,8 @@ using namespace linalg;
 
 namespace {
 
-/* ------------------------------------------------------------------------- */
-/* Test harness                                                              */
-/* ------------------------------------------------------------------------- */
-
 bool test_failed;
 
-/* Fails the current test and returns from the enclosing test function. */
 #define CHECK(condition, ...)                                                  \
     do {                                                                       \
         if (!(condition)) {                                                    \
@@ -49,10 +28,6 @@ bool test_failed;
         }                                                                      \
     } while (0)
 
-/*
- * Fails the current test unless the expression after exception_type throws
- * exception_type. Any other exception propagates and fails the test too.
- */
 #define CHECK_THROWS(exception_type, ...)                                      \
     do {                                                                       \
         bool threw_expected = false;                                           \
@@ -71,12 +46,10 @@ double seconds_since(std::clock_t start) {
     return static_cast<double>(std::clock() - start) / CLOCKS_PER_SEC;
 }
 
-/* Absolute error up to tolerance, or relative error once expected is larger than 1. */
 bool near(double actual, double expected, double tolerance = kTolerance) {
     return std::fabs(actual - expected) <= tolerance * std::max(1.0, std::fabs(expected));
 }
 
-/* Returns true if actual has expected's shape and near entries; otherwise prints the first difference. */
 bool matrices_match(const Matrix& actual, const Matrix& expected) {
     if (actual.rows() != expected.rows() || actual.cols() != expected.cols()) {
         std::printf("    expected a %zu x %zu matrix, got %zu x %zu\n",
@@ -95,10 +68,6 @@ bool matrices_match(const Matrix& actual, const Matrix& expected) {
     }
     return true;
 }
-
-/* ------------------------------------------------------------------------- */
-/* Reference operations, so checks don't depend on the code under test.      */
-/* ------------------------------------------------------------------------- */
 
 Matrix reference_product(const Matrix& a, const Matrix& b) {
     Matrix product(a.rows(), b.cols());
@@ -132,7 +101,6 @@ Matrix reference_transpose(const Matrix& m) {
     return transposed;
 }
 
-/* A deterministic stream of doubles in [-1, 1), so every run tests the same matrices. */
 class Random {
 public:
     explicit Random(std::uint32_t seed) : state_(seed) {}
@@ -157,7 +125,6 @@ Matrix random_matrix(std::size_t rows, std::size_t cols, std::uint32_t seed) {
     return m;
 }
 
-/* A random matrix whose diagonal outweighs the rest of each row, so it is invertible and well-conditioned. */
 Matrix diagonally_dominant(std::size_t n, std::uint32_t seed) {
     Matrix m = random_matrix(n, n, seed);
     for (std::size_t i = 0; i < n; i++) {
@@ -166,7 +133,6 @@ Matrix diagonally_dominant(std::size_t n, std::uint32_t seed) {
     return m;
 }
 
-/* The n x n identity with a rotation by `angle` in the plane of coordinates i and j. */
 Matrix rotation(std::size_t n, std::size_t i, std::size_t j, double angle) {
     Matrix m = Matrix::identity(n);
     m.at(i, i) = std::cos(angle);
@@ -175,10 +141,6 @@ Matrix rotation(std::size_t n, std::size_t i, std::size_t j, double angle) {
     m.at(j, i) = std::sin(angle);
     return m;
 }
-
-/* ------------------------------------------------------------------------- */
-/* Level 1: the Matrix type                                                  */
-/* ------------------------------------------------------------------------- */
 
 void test_shape_constructor_fills_zeros() {
     Matrix m(2, 3);
@@ -314,10 +276,6 @@ void test_equality() {
     CHECK(!(Matrix(2, 3) == Matrix(3, 2)), "zero matrices of different shapes should not compare equal");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 2: entry-wise operations                                            */
-/* ------------------------------------------------------------------------- */
-
 void test_add_and_subtract() {
     Matrix a{{1, 2}, {3, 4}};
     Matrix b{{5, -6}, {0.5, 8}};
@@ -402,10 +360,6 @@ void test_trace_rejects_non_square() {
     CHECK_THROWS(std::invalid_argument, trace(Matrix(2, 3)));
     CHECK_THROWS(std::invalid_argument, trace(Matrix(3, 1)));
 }
-
-/* ------------------------------------------------------------------------- */
-/* Level 3: multiplication and powers                                        */
-/* ------------------------------------------------------------------------- */
 
 void test_multiply() {
     Matrix a{{1, 2, 3}, {4, 5, 6}};
@@ -494,18 +448,12 @@ void test_power_of_large_exponents_is_fast() {
     CHECK(matrices_match(turn_result, three_quarter_turns), "{{0, -1}, {1, 0}}^10000003 is wrong");
     CHECK(elapsed < 0.01, "two powers with exponents near 10^7 took %.3fs; must be O(n^3 log exponent)", elapsed);
 
-    // Exponents beyond 32 bits.
     Matrix shear_10_18{{1, 1e18}, {0, 1}};
     CHECK(matrices_match(power(shear, 1000000000000000000ULL), shear_10_18), "{{1, 1}, {0, 1}}^(10^18) is wrong");
     CHECK(matrices_match(power(quarter_turn, 4000000000003ULL), three_quarter_turns),
           "{{0, -1}, {1, 0}}^4000000000003 is wrong");
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 4: determinants                                                     */
-/* ------------------------------------------------------------------------- */
-
-/* Returns true if determinant(m) is near expected; otherwise prints both values. */
 bool determinant_is(const Matrix& m, double expected) {
     double actual = determinant(m);
     if (near(actual, expected)) {
@@ -575,8 +523,6 @@ void test_determinant_rejects_non_square() {
 }
 
 void test_determinant_of_10x10_is_fast() {
-    // m = lower * upper, where lower has 1s on its diagonal, so det(m) is the
-    // product of upper's diagonal: (2 * -1 * 0.5)^3 * 2 = -2.
     const std::size_t n = 10;
     const double upper_diagonal[] = {2, -1, 0.5};
     Random random(7);
@@ -604,11 +550,6 @@ void test_determinant_of_10x10_is_fast() {
     CHECK(elapsed < 0.01, "a 10 x 10 determinant took %.3fs; must be O(n^3)", elapsed);
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 5: row reduction and rank                                           */
-/* ------------------------------------------------------------------------- */
-
-/* Returns true if rank(m) is expected; otherwise prints both values. */
 bool rank_is(const Matrix& m, std::size_t expected) {
     std::size_t actual = rank(m);
     if (actual == expected) {
@@ -688,7 +629,6 @@ void test_rank() {
     CHECK(rank_is(zero_single, 0), "rank of {{0}} is wrong");
     CHECK(rank_is(single, 1), "rank of {{5}} is wrong");
 
-    // A 4 x 2 times a 2 x 5 matrix has rank 2, and so does its transpose.
     Matrix rank_two = reference_product(random_matrix(4, 2, 1), random_matrix(2, 5, 2));
     CHECK(rank_is(rank_two, 2), "rank of a 4 x 5 product of 4 x 2 and 2 x 5 matrices is wrong");
     CHECK(rank_is(reference_transpose(rank_two), 2), "rank of its 5 x 4 transpose is wrong");
@@ -703,10 +643,6 @@ void test_rank_treats_tiny_values_as_zero() {
     CHECK(rank_is(tiny_diagonal, 0), "rank of {{1e-12, 0}, {0, 1e-12}} is wrong");
     CHECK(rank_is(tiny_single, 0), "rank of {{1e-12}} is wrong");
 }
-
-/* ------------------------------------------------------------------------- */
-/* Level 6: inverses and linear systems                                      */
-/* ------------------------------------------------------------------------- */
 
 void test_inverse_of_small_matrices() {
     Matrix two{{4, 7}, {2, 6}};
@@ -792,10 +728,6 @@ void test_solve_rejects_bad_input() {
     CHECK_THROWS(std::domain_error, solve(Matrix(2, 2), Matrix(2, 1)));
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 7: LU decomposition                                                 */
-/* ------------------------------------------------------------------------- */
-
 bool has_shape(const Matrix& m, std::size_t rows, std::size_t cols, const char* name) {
     if (m.rows() == rows && m.cols() == cols) {
         return true;
@@ -804,7 +736,6 @@ bool has_shape(const Matrix& m, std::size_t rows, std::size_t cols, const char* 
     return false;
 }
 
-/* Returns true if p is the identity with its rows reordered; otherwise prints why not. */
 bool is_permutation(const Matrix& p) {
     std::vector<int> ones_in_column(p.cols(), 0);
 
@@ -835,7 +766,6 @@ bool is_permutation(const Matrix& p) {
     return true;
 }
 
-/* Returns true if lu_decompose(m) meets its contract in matrix.h; otherwise prints the first problem. */
 bool lu_is_valid(const Matrix& m) {
     std::size_t n = m.rows();
     LU lu = lu_decompose(m);
@@ -913,11 +843,6 @@ void test_lu_rejects_non_square() {
     CHECK_THROWS(std::invalid_argument, lu_decompose(Matrix(3, 2)));
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 8: QR decomposition and least squares                               */
-/* ------------------------------------------------------------------------- */
-
-/* Returns true if qr_decompose(m) meets its contract in matrix.h; otherwise prints the first problem. */
 bool qr_is_valid(const Matrix& m) {
     std::size_t rows = m.rows();
     std::size_t cols = m.cols();
@@ -954,7 +879,6 @@ bool qr_is_valid(const Matrix& m) {
 }
 
 void test_qr_of_small_matrices() {
-    // With r's diagonal positive, the factors are unique, so these are exact.
     Matrix two{{3, 0}, {4, 5}};
     Matrix two_q{{0.6, -0.8}, {0.8, 0.6}};
     Matrix two_r{{5, 4}, {0, 3}};
@@ -1000,13 +924,11 @@ void test_qr_rejects_bad_input() {
 }
 
 void test_least_squares_with_an_exact_fit() {
-    // The points (0, 1), (1, 3), (2, 5), (3, 7) lie on y = 1 + 2x.
     Matrix line{{1, 0}, {1, 1}, {1, 2}, {1, 3}};
     Matrix ys{{1}, {3}, {5}, {7}};
     Matrix coefficients{{1}, {2}};
     CHECK(matrices_match(least_squares(line, ys), coefficients), "fitting points on y = 1 + 2x is wrong");
 
-    // A square invertible system has an exact solution.
     Matrix a{{2, 1}, {1, 3}};
     Matrix b{{3}, {5}};
     Matrix x{{0.8}, {1.4}};
@@ -1014,13 +936,11 @@ void test_least_squares_with_an_exact_fit() {
 }
 
 void test_least_squares_without_an_exact_fit() {
-    // Best line through (0, 1), (1, 2), (2, 2) is y = 7/6 + x/2; through (0, 0), (1, 1), (2, 2) it is y = x.
     Matrix line{{1, 0}, {1, 1}, {1, 2}};
     Matrix ys{{1, 0}, {2, 1}, {2, 2}};
     Matrix coefficients{{7.0 / 6, 0}, {0.5, 1}};
     CHECK(matrices_match(least_squares(line, ys), coefficients), "fitting lines to three points is wrong");
 
-    // For a larger system, the residual a * x - b must be orthogonal to a's columns.
     Matrix a = random_matrix(50, 5, 21);
     Matrix b2 = random_matrix(50, 2, 22);
     Matrix x2 = least_squares(a, b2);
@@ -1041,11 +961,6 @@ void test_least_squares_rejects_bad_input() {
     CHECK_THROWS(std::domain_error, least_squares(dependent_columns, Matrix(3, 1)));
 }
 
-/* ------------------------------------------------------------------------- */
-/* Level 9: eigenvalues of symmetric matrices                                */
-/* ------------------------------------------------------------------------- */
-
-/* Returns true if symmetric_eigenvalues(m) matches expected; otherwise prints the first difference. */
 bool eigenvalues_are(const Matrix& m, const std::vector<double>& expected) {
     std::vector<double> actual = symmetric_eigenvalues(m);
     if (actual.size() != expected.size()) {
@@ -1083,7 +998,6 @@ void test_repeated_eigenvalues() {
     Matrix scaled_identity{{3, 0, 0}, {0, 3, 0}, {0, 0, 3}};
     Matrix ones{{1, 1}, {1, 1}};
 
-    // Reflection across the plane orthogonal to (1, 1, 1).
     double third = 1.0 / 3;
     Matrix reflection{{third, -2 * third, -2 * third}, {-2 * third, third, -2 * third}, {-2 * third, -2 * third, third}};
 
@@ -1093,7 +1007,6 @@ void test_repeated_eigenvalues() {
 }
 
 void test_eigenvalues_of_a_rotated_diagonal_matrix() {
-    // q * d * transpose(q) has d's diagonal as its eigenvalues when q is a rotation.
     Matrix d(5, 5);
     const double diagonal[] = {5, -2, 0.5, 3, -2};
     for (std::size_t i = 0; i < 5; i++) {
@@ -1113,7 +1026,6 @@ void test_eigenvalues_of_a_rotated_diagonal_matrix() {
 }
 
 void test_eigenvalues_of_20x20_second_difference() {
-    // 2 on the diagonal and -1 beside it has eigenvalues 2 - 2 cos(k pi / 21) for k = 1..20.
     const std::size_t n = 20;
     const double pi = std::acos(-1.0);
     Matrix m(n, n);
@@ -1141,10 +1053,6 @@ void test_eigenvalues_check_symmetry() {
     CHECK_THROWS(std::invalid_argument, symmetric_eigenvalues(slightly_asymmetric));
     CHECK_THROWS(std::invalid_argument, symmetric_eigenvalues(Matrix(2, 3)));
 }
-
-/* ------------------------------------------------------------------------- */
-/* Runner                                                                    */
-/* ------------------------------------------------------------------------- */
 
 const int kLevelCount = 9;
 
@@ -1231,10 +1139,9 @@ const Test kTests[] = {
     {9, "checks symmetry", test_eigenvalues_check_symmetry},
 };
 
-}  // namespace
+}
 
 int main(int argc, char** argv) {
-    // 0 runs every level.
     int selected_level = 0;
     if (argc == 2) {
         selected_level = std::atoi(argv[1]);
