@@ -25,16 +25,6 @@ Matrix::Matrix(std::initializer_list<std::initializer_list<double>> rows) {
     } 
 }
 
-Matrix Matrix::identity(std::size_t n) {
-    Matrix mat(n, n); 
-    
-    for(std::size_t i = 0; i < n; i++) {
-        mat.at(i, i) = 1;  
-    }
-    
-    return mat; 
-}
-
 size_t Matrix::rows() {
     return mat.size(); 
 }
@@ -49,6 +39,31 @@ double& Matrix::at(std::size_t row, std::size_t col) {
         throw std::out_of_range("do that shit again"); 
     }
     return mat[row][col]; 
+}
+
+bool Matrix::operator==(Matrix other) {
+    if(rows() != other.rows() || cols() != other.cols()) return false; 
+
+    
+    for(std::size_t r = 0; r < rows(); r++) {
+        for(std::size_t c = 0; c < cols(); c++) {
+            if(this->at(r, c) != other.at(r, c))  {
+               return false; 
+            }
+        }
+    }
+
+    return true;
+}
+
+Matrix Matrix::identity(std::size_t n) {
+    Matrix mat(n, n); 
+    
+    for(std::size_t i = 0; i < n; i++) {
+        mat.at(i, i) = 1;  
+    }
+    
+    return mat; 
 }
 
 }

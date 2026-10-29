@@ -282,6 +282,90 @@ void test_identity_rejects_zero_size() {
     CHECK_THROWS(std::invalid_argument, Matrix::identity(0));
 }
 
+void test_equal_matrices_compare_equal() {
+    Matrix a{{1, 2, 3}, {4, 5, 6}};
+    Matrix b{{1, 2, 3}, {4, 5, 6}};
+    CHECK(a == b, "two copies of {{1, 2, 3}, {4, 5, 6}} should be equal");
+    CHECK(b == a, "equality should not depend on the order of the operands");
+    CHECK(a == a, "a matrix should equal itself");
+
+    Matrix single{{-7.5}};
+    Matrix also_single{{-7.5}};
+    CHECK(single == also_single, "{{-7.5}} should equal {{-7.5}}");
+}
+
+void test_equal_matrices_built_differently() {
+    Matrix built{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+    Matrix identity = Matrix::identity(3);
+    CHECK(built == identity, "{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}} should equal identity(3)");
+
+    Matrix zeros(2, 2);
+    Matrix listed{{0, 0}, {0, 0}};
+    CHECK(zeros == listed, "Matrix(2, 2) should equal {{0, 0}, {0, 0}}");
+
+    Matrix written(2, 2);
+    written.at(0, 1) = 3;
+    written.at(1, 0) = -1;
+    Matrix expected{{0, 3}, {-1, 0}};
+    CHECK(written == expected, "a matrix filled with at() should equal the same entries written as a list");
+}
+
+void test_one_different_entry_makes_unequal() {
+    Matrix base{{1, 2, 3}, {4, 5, 6}};
+
+    for (std::size_t row = 0; row < 2; row++) {
+        for (std::size_t col = 0; col < 3; col++) {
+            Matrix changed{{1, 2, 3}, {4, 5, 6}};
+            changed.at(row, col) += 0.5;
+            CHECK(!(base == changed), "matrices that differ only at (%zu, %zu) compared equal", row, col);
+            CHECK(!(changed == base), "matrices that differ only at (%zu, %zu) compared equal", row, col);
+        }
+    }
+}
+
+void test_different_shapes_are_unequal() {
+    CHECK(!(Matrix(2, 3) == Matrix(3, 2)), "a 2 x 3 and a 3 x 2 matrix of zeros compared equal");
+    CHECK(!(Matrix(1, 4) == Matrix(4, 1)), "a 1 x 4 and a 4 x 1 matrix of zeros compared equal");
+    CHECK(!(Matrix(2, 2) == Matrix(2, 3)), "a 2 x 2 and a 2 x 3 matrix of zeros compared equal");
+    CHECK(!(Matrix(2, 3) == Matrix(2, 2)), "a 2 x 3 and a 2 x 2 matrix of zeros compared equal");
+    CHECK(!(Matrix(2, 2) == Matrix(3, 2)), "a 2 x 2 and a 3 x 2 matrix of zeros compared equal");
+    CHECK(!(Matrix(3, 2) == Matrix(2, 2)), "a 3 x 2 and a 2 x 2 matrix of zeros compared equal");
+
+    Matrix small{{1, 2}, {3, 4}};
+    Matrix bigger{{1, 2, 0}, {3, 4, 0}};
+    CHECK(!(small == bigger), "{{1, 2}, {3, 4}} compared equal to {{1, 2, 0}, {3, 4, 0}}");
+    CHECK(!(bigger == small), "{{1, 2, 0}, {3, 4, 0}} compared equal to {{1, 2}, {3, 4}}");
+}
+
+void test_entries_must_match_exactly() {
+    Matrix sum{{0.1 + 0.2}};
+    Matrix exact{{0.3}};
+    CHECK(!(sum == exact), "{{0.1 + 0.2}} compared equal to {{0.3}}, but the doubles differ");
+
+    Matrix a{{1}};
+    Matrix b{{1 + 1e-12}};
+    CHECK(!(a == b), "{{1}} compared equal to {{1 + 1e-12}}");
+}
+
+void test_not_equal() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix same{{1, 2}, {3, 4}};
+    Matrix different{{1, 2}, {3, 5}};
+
+    CHECK(!(a != same), "a != same should be false for equal matrices");
+    CHECK(a != different, "a != different should be true when an entry differs");
+    CHECK(Matrix(2, 3) != Matrix(3, 2), "Matrix(2, 3) != Matrix(3, 2) should be true");
+}
+
+void test_comparison_leaves_matrices_unchanged() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix b{{1, 2}, {3, 5}};
+    (void)(a == b);
+
+    CHECK(a.rows() == 2 && a.cols() == 2 && a.at(1, 1) == 4, "comparing changed the left matrix");
+    CHECK(b.rows() == 2 && b.cols() == 2 && b.at(1, 1) == 5, "comparing changed the right matrix");
+}
+
 struct Test {
     const char* name;
     void (*run)();
@@ -314,6 +398,13 @@ const Test kTests[] = {
     {"identity can change", test_identity_can_change},
     {"identity rejects bad indexes", test_identity_rejects_bad_indexes},
     {"identity rejects zero size", test_identity_rejects_zero_size},
+    {"equal matrices compare equal", test_equal_matrices_compare_equal},
+    {"equal matrices built differently", test_equal_matrices_built_differently},
+    {"one different entry makes unequal", test_one_different_entry_makes_unequal},
+    {"different shapes are unequal", test_different_shapes_are_unequal},
+    {"entries must match exactly", test_entries_must_match_exactly},
+    {"not equal", test_not_equal},
+    {"comparison leaves matrices unchanged", test_comparison_leaves_matrices_unchanged},
 };
 
 }
