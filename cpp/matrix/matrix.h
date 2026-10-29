@@ -17,14 +17,13 @@ public:
     size_t cols(); 
     
     double& at(std::size_t row, std::size_t col); 
-    
-    bool operator==(Matrix other); 
-
-    Matrix operator+(Matrix other); 
-    
-    Matrix operator-(Matrix other); 
-
-    static Matrix identity(std::size_t n); 
 };
 
+bool operator==(Matrix mat_a, Matrix mat_b); 
+
+Matrix operator+(Matrix mat_a, Matrix mat_b); 
+
+Matrix operator-(Matrix mat_a, Matrix mat_b); 
+    
+Matrix identity(std::size_t n);
 }

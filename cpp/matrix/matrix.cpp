@@ -41,13 +41,15 @@ double& Matrix::at(std::size_t row, std::size_t col) {
     return mat[row][col]; 
 }
 
-bool Matrix::operator==(Matrix other) {
-    if(rows() != other.rows() || cols() != other.cols()) return false; 
+bool operator==(Matrix mat_a, Matrix mat_b) {
+    std::size_t m = mat_a.rows(); 
+    std::size_t n = mat_a.cols(); 
 
-    
-    for(std::size_t r = 0; r < rows(); r++) {
-        for(std::size_t c = 0; c < cols(); c++) {
-            if(at(r, c) != other.at(r, c))  {
+    if(m != mat_b.rows() || n != mat_b.cols()) return false; 
+
+    for(std::size_t r = 0; r < m; r++) {
+        for(std::size_t c = 0; c < n; c++) {
+            if(mat_a.at(r, c) != mat_b.at(r, c))  {
                return false; 
             }
         }
@@ -56,37 +58,41 @@ bool Matrix::operator==(Matrix other) {
     return true;
 }
 
-Matrix Matrix::operator+(Matrix other) {
-    if(rows() != other.rows() || cols() != other.cols()) {
+Matrix operator+(Matrix mat_a, Matrix mat_b) {
+    std::size_t m = mat_a.rows(); 
+    std::size_t n = mat_a.cols(); 
+    
+    if(m != mat_b.rows() || n != mat_b.cols()) {
         throw std::invalid_argument("bruh");
     }
     
-    Matrix res(rows(), cols()); 
-    for(std::size_t r = 0; r < rows(); r++) {
-        for(std::size_t c = 0; c < cols(); c++) {
-            res.at(r, c) = at(r, c) + other.at(r, c);
+    Matrix res(m, n); 
+    for(std::size_t r = 0; r < m; r++) {
+        for(std::size_t c = 0; c < n; c++) {
+            res.at(r, c) = mat_a.at(r, c) + mat_b.at(r, c);
         }
     }
-
     return res; 
 }
 
-Matrix Matrix::operator-(Matrix other) {
-    if(rows() != other.rows() || cols() != other.cols()) {
+Matrix operator-(Matrix mat_a, Matrix mat_b) {
+    std::size_t m = mat_a.rows(); 
+    std::size_t n = mat_a.cols(); 
+    
+    if(m != mat_b.rows() || n != mat_b.cols()) {
         throw std::invalid_argument("bruh");
     }
     
-    Matrix res(rows(), cols()); 
-    for(std::size_t r = 0; r < rows(); r++) {
-        for(std::size_t c = 0; c < cols(); c++) {
-            res.at(r, c) = at(r, c) - other.at(r, c);
+    Matrix res(m, n); 
+    for(std::size_t r = 0; r < m; r++) {
+        for(std::size_t c = 0; c < n; c++) {
+            res.at(r, c) = mat_a.at(r, c) - mat_b.at(r, c);
         }
     }
-
     return res; 
 }
 
-Matrix Matrix::identity(std::size_t n) {
+Matrix identity(std::size_t n) {
     Matrix mat(n, n); 
     
     for(std::size_t i = 0; i < n; i++) {

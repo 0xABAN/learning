@@ -28,6 +28,7 @@
         CHECK(threw_expected, "%s should throw %s", #__VA_ARGS__, #exception_type); \
     } while (0)
 
+using linalg::identity;
 using linalg::Matrix;
 
 namespace {
@@ -225,15 +226,15 @@ void test_list_constructor_rejects_ragged_rows() {
 }
 
 void test_identity_shape() {
-    Matrix i3 = Matrix::identity(3);
+    Matrix i3 = identity(3);
     CHECK(i3.rows() == 3 && i3.cols() == 3, "identity(3) is %zu x %zu", i3.rows(), i3.cols());
 
-    Matrix i1 = Matrix::identity(1);
+    Matrix i1 = identity(1);
     CHECK(i1.rows() == 1 && i1.cols() == 1, "identity(1) is %zu x %zu", i1.rows(), i1.cols());
 }
 
 void test_identity_entries() {
-    Matrix i3 = Matrix::identity(3);
+    Matrix i3 = identity(3);
     for (std::size_t row = 0; row < 3; row++) {
         for (std::size_t col = 0; col < 3; col++) {
             double expected = row == col ? 1 : 0;
@@ -242,13 +243,13 @@ void test_identity_entries() {
         }
     }
 
-    Matrix i1 = Matrix::identity(1);
+    Matrix i1 = identity(1);
     CHECK(i1.at(0, 0) == 1, "identity(1).at(0, 0) is %g, expected 1", i1.at(0, 0));
 }
 
 void test_large_identity() {
     const std::size_t n = 200;
-    Matrix m = Matrix::identity(n);
+    Matrix m = identity(n);
     CHECK(m.rows() == n && m.cols() == n, "identity(200) is %zu x %zu", m.rows(), m.cols());
 
     for (std::size_t row = 0; row < n; row++) {
@@ -261,25 +262,25 @@ void test_large_identity() {
 }
 
 void test_identity_can_change() {
-    Matrix m = Matrix::identity(2);
+    Matrix m = identity(2);
     m.at(0, 1) = 5;
     m.at(1, 1) = -3;
 
     CHECK(m.at(0, 1) == 5 && m.at(1, 1) == -3, "writing to an identity matrix didn't stick");
     CHECK(m.at(0, 0) == 1 && m.at(1, 0) == 0, "writing two entries changed another one");
 
-    Matrix fresh = Matrix::identity(2);
+    Matrix fresh = identity(2);
     CHECK(fresh.at(0, 1) == 0 && fresh.at(1, 1) == 1, "changing one identity matrix changed a later one");
 }
 
 void test_identity_rejects_bad_indexes() {
-    Matrix m = Matrix::identity(2);
+    Matrix m = identity(2);
     CHECK_THROWS(std::out_of_range, m.at(2, 0));
     CHECK_THROWS(std::out_of_range, m.at(0, 2));
 }
 
 void test_identity_rejects_zero_size() {
-    CHECK_THROWS(std::invalid_argument, Matrix::identity(0));
+    CHECK_THROWS(std::invalid_argument, identity(0));
 }
 
 void test_equal_matrices_compare_equal() {
@@ -296,8 +297,8 @@ void test_equal_matrices_compare_equal() {
 
 void test_equal_matrices_built_differently() {
     Matrix built{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-    Matrix identity = Matrix::identity(3);
-    CHECK(built == identity, "{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}} should equal identity(3)");
+    Matrix i3 = identity(3);
+    CHECK(built == i3, "{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}} should equal identity(3)");
 
     Matrix zeros(2, 2);
     Matrix listed{{0, 0}, {0, 0}};
