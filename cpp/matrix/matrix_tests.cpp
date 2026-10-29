@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <exception>
+#include <initializer_list>
 #include <stdexcept>
 
 #define CHECK(condition, ...)                                                  \
@@ -152,6 +153,135 @@ void test_at_rejects_out_of_range_indexes() {
     CHECK_THROWS(std::out_of_range, single.at(0, 1));
 }
 
+void test_list_constructor_sets_shape() {
+    Matrix m{{1, 2, 3}, {4, 5, 6}};
+    CHECK(m.rows() == 2 && m.cols() == 3, "{{1, 2, 3}, {4, 5, 6}} is %zu x %zu", m.rows(), m.cols());
+
+    Matrix tall{{1, 2}, {3, 4}, {5, 6}};
+    CHECK(tall.rows() == 3 && tall.cols() == 2, "{{1, 2}, {3, 4}, {5, 6}} is %zu x %zu",
+          tall.rows(), tall.cols());
+}
+
+void test_list_constructor_fills_rows_in_order() {
+    Matrix m{{1, 2, 3}, {4, 5, 6}};
+    const double expected[2][3] = {{1, 2, 3}, {4, 5, 6}};
+
+    for (std::size_t row = 0; row < 2; row++) {
+        for (std::size_t col = 0; col < 3; col++) {
+            CHECK(m.at(row, col) == expected[row][col], "{{1, 2, 3}, {4, 5, 6}}.at(%zu, %zu) is %g, expected %g",
+                  row, col, m.at(row, col), expected[row][col]);
+        }
+    }
+}
+
+void test_list_constructor_row_and_column_vectors() {
+    Matrix row{{1, 2, 3, 4}};
+    CHECK(row.rows() == 1 && row.cols() == 4, "{{1, 2, 3, 4}} is %zu x %zu", row.rows(), row.cols());
+    CHECK(row.at(0, 3) == 4, "{{1, 2, 3, 4}}.at(0, 3) is %g, expected 4", row.at(0, 3));
+
+    Matrix column{{1}, {2}, {3}};
+    CHECK(column.rows() == 3 && column.cols() == 1, "{{1}, {2}, {3}} is %zu x %zu",
+          column.rows(), column.cols());
+    CHECK(column.at(2, 0) == 3, "{{1}, {2}, {3}}.at(2, 0) is %g, expected 3", column.at(2, 0));
+}
+
+void test_list_constructor_single_entry() {
+    Matrix m{{-7.5}};
+    CHECK(m.rows() == 1 && m.cols() == 1, "{{-7.5}} is %zu x %zu", m.rows(), m.cols());
+    CHECK(m.at(0, 0) == -7.5, "{{-7.5}}.at(0, 0) is %g, expected -7.5", m.at(0, 0));
+}
+
+void test_list_constructor_keeps_fractions() {
+    Matrix m{{0.1, -0.25}, {1e-300, -1e300}};
+    CHECK(m.at(0, 0) == 0.1, "stored 0.1, read %g", m.at(0, 0));
+    CHECK(m.at(0, 1) == -0.25, "stored -0.25, read %g", m.at(0, 1));
+    CHECK(m.at(1, 0) == 1e-300, "stored 1e-300, read %g", m.at(1, 0));
+    CHECK(m.at(1, 1) == -1e300, "stored -1e300, read %g", m.at(1, 1));
+}
+
+void test_list_built_matrix_can_change() {
+    Matrix m{{1, 2}, {3, 4}};
+    m.at(0, 1) = 9;
+
+    CHECK(m.at(0, 1) == 9, "after writing 9 to (0, 1), it reads %g", m.at(0, 1));
+    CHECK(m.at(0, 0) == 1 && m.at(1, 0) == 3 && m.at(1, 1) == 4, "writing (0, 1) changed another entry");
+    CHECK_THROWS(std::out_of_range, m.at(2, 0));
+    CHECK_THROWS(std::out_of_range, m.at(0, 2));
+}
+
+void test_list_constructor_rejects_empty_input() {
+    std::initializer_list<std::initializer_list<double>> no_rows = {};
+    CHECK_THROWS(std::invalid_argument, Matrix(no_rows));
+    CHECK_THROWS(std::invalid_argument, Matrix{{}});
+    CHECK_THROWS(std::invalid_argument, Matrix{{}, {}});
+}
+
+void test_list_constructor_rejects_ragged_rows() {
+    CHECK_THROWS(std::invalid_argument, Matrix{{1, 2}, {}});
+    CHECK_THROWS(std::invalid_argument, Matrix{{}, {1, 2}});
+    CHECK_THROWS(std::invalid_argument, Matrix{{1, 2}, {3}});
+    CHECK_THROWS(std::invalid_argument, Matrix{{1}, {2, 3}});
+    CHECK_THROWS(std::invalid_argument, Matrix{{1, 2}, {3, 4}, {5, 6, 7}});
+}
+
+void test_identity_shape() {
+    Matrix i3 = Matrix::identity(3);
+    CHECK(i3.rows() == 3 && i3.cols() == 3, "identity(3) is %zu x %zu", i3.rows(), i3.cols());
+
+    Matrix i1 = Matrix::identity(1);
+    CHECK(i1.rows() == 1 && i1.cols() == 1, "identity(1) is %zu x %zu", i1.rows(), i1.cols());
+}
+
+void test_identity_entries() {
+    Matrix i3 = Matrix::identity(3);
+    for (std::size_t row = 0; row < 3; row++) {
+        for (std::size_t col = 0; col < 3; col++) {
+            double expected = row == col ? 1 : 0;
+            CHECK(i3.at(row, col) == expected, "identity(3).at(%zu, %zu) is %g, expected %g",
+                  row, col, i3.at(row, col), expected);
+        }
+    }
+
+    Matrix i1 = Matrix::identity(1);
+    CHECK(i1.at(0, 0) == 1, "identity(1).at(0, 0) is %g, expected 1", i1.at(0, 0));
+}
+
+void test_large_identity() {
+    const std::size_t n = 200;
+    Matrix m = Matrix::identity(n);
+    CHECK(m.rows() == n && m.cols() == n, "identity(200) is %zu x %zu", m.rows(), m.cols());
+
+    for (std::size_t row = 0; row < n; row++) {
+        for (std::size_t col = 0; col < n; col++) {
+            double expected = row == col ? 1 : 0;
+            CHECK(m.at(row, col) == expected, "identity(200).at(%zu, %zu) is %g, expected %g",
+                  row, col, m.at(row, col), expected);
+        }
+    }
+}
+
+void test_identity_can_change() {
+    Matrix m = Matrix::identity(2);
+    m.at(0, 1) = 5;
+    m.at(1, 1) = -3;
+
+    CHECK(m.at(0, 1) == 5 && m.at(1, 1) == -3, "writing to an identity matrix didn't stick");
+    CHECK(m.at(0, 0) == 1 && m.at(1, 0) == 0, "writing two entries changed another one");
+
+    Matrix fresh = Matrix::identity(2);
+    CHECK(fresh.at(0, 1) == 0 && fresh.at(1, 1) == 1, "changing one identity matrix changed a later one");
+}
+
+void test_identity_rejects_bad_indexes() {
+    Matrix m = Matrix::identity(2);
+    CHECK_THROWS(std::out_of_range, m.at(2, 0));
+    CHECK_THROWS(std::out_of_range, m.at(0, 2));
+}
+
+void test_identity_rejects_zero_size() {
+    CHECK_THROWS(std::invalid_argument, Matrix::identity(0));
+}
+
 struct Test {
     const char* name;
     void (*run)();
@@ -170,6 +300,20 @@ const Test kTests[] = {
     {"row and column vector entries", test_row_and_column_vector_entries},
     {"entries keep fractions and extremes", test_entries_keep_fractions_and_extremes},
     {"at rejects out-of-range indexes", test_at_rejects_out_of_range_indexes},
+    {"list constructor sets shape", test_list_constructor_sets_shape},
+    {"list constructor fills rows in order", test_list_constructor_fills_rows_in_order},
+    {"list constructor row and column vectors", test_list_constructor_row_and_column_vectors},
+    {"list constructor single entry", test_list_constructor_single_entry},
+    {"list constructor keeps fractions", test_list_constructor_keeps_fractions},
+    {"list-built matrix can change", test_list_built_matrix_can_change},
+    {"list constructor rejects empty input", test_list_constructor_rejects_empty_input},
+    {"list constructor rejects ragged rows", test_list_constructor_rejects_ragged_rows},
+    {"identity shape", test_identity_shape},
+    {"identity entries", test_identity_entries},
+    {"large identity", test_large_identity},
+    {"identity can change", test_identity_can_change},
+    {"identity rejects bad indexes", test_identity_rejects_bad_indexes},
+    {"identity rejects zero size", test_identity_rejects_zero_size},
 };
 
 }
