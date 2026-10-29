@@ -682,6 +682,76 @@ void test_large_transpose() {
     }
 }
 
+void test_trace_of_square_matrices() {
+    Matrix two{{1, 2}, {3, 4}};
+    CHECK(trace(two) == 5, "trace({{1, 2}, {3, 4}}) is %g, expected 5", trace(two));
+
+    Matrix three{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    CHECK(trace(three) == 15, "trace({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) is %g, expected 15", trace(three));
+
+    Matrix four{{2, 9, 9, 9}, {9, -3, 9, 9}, {9, 9, 0.5, 9}, {9, 9, 9, 10}};
+    CHECK(trace(four) == 9.5, "trace of a 4 x 4 matrix with diagonal 2, -3, 0.5, 10 is %g, expected 9.5",
+          trace(four));
+}
+
+void test_trace_single_entry() {
+    CHECK(trace(Matrix{{-7.5}}) == -7.5, "trace({{-7.5}}) is %g, expected -7.5", trace(Matrix{{-7.5}}));
+}
+
+void test_trace_of_identity_and_zeros() {
+    CHECK(trace(identity(1)) == 1, "trace(identity(1)) is %g, expected 1", trace(identity(1)));
+    CHECK(trace(identity(5)) == 5, "trace(identity(5)) is %g, expected 5", trace(identity(5)));
+    CHECK(trace(Matrix(3, 3)) == 0, "trace of a 3 x 3 zero matrix is %g, expected 0", trace(Matrix(3, 3)));
+}
+
+void test_trace_ignores_entries_off_the_diagonal() {
+    Matrix m{{1, 100, 100}, {-100, 2, 100}, {100, -100, 3}};
+    CHECK(trace(m) == 6, "trace should only add the diagonal; got %g, expected 6", trace(m));
+
+    Matrix negative_diagonal{{-1, 5}, {5, -4}};
+    CHECK(trace(negative_diagonal) == -5, "trace({{-1, 5}, {5, -4}}) is %g, expected -5",
+          trace(negative_diagonal));
+}
+
+void test_trace_with_add_scale_and_transpose() {
+    Matrix a{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    Matrix b{{-2, 0, 1}, {3, 0.5, 8}, {1, 1, 4}};
+
+    CHECK(trace(a + b) == trace(a) + trace(b), "trace(a + b) should equal trace(a) + trace(b)");
+    CHECK(trace(a - b) == trace(a) - trace(b), "trace(a - b) should equal trace(a) - trace(b)");
+    CHECK(trace(3 * a) == 3 * trace(a), "trace(3 * a) should equal 3 * trace(a)");
+    CHECK(trace(transpose(a)) == trace(a), "trace(transpose(a)) should equal trace(a)");
+}
+
+void test_trace_leaves_matrix_unchanged() {
+    Matrix m{{1, 2}, {3, 4}};
+    Matrix before{{1, 2}, {3, 4}};
+
+    (void)trace(m);
+    CHECK(m == before, "trace(m) changed m");
+}
+
+void test_large_trace() {
+    const std::size_t n = 200;
+    Matrix m(n, n);
+    for (std::size_t row = 0; row < n; row++) {
+        for (std::size_t col = 0; col < n; col++) {
+            m.at(row, col) = row == col ? static_cast<double>(row) : 1000;
+        }
+    }
+
+    double expected = (n - 1) * n / 2.0;
+    CHECK(trace(m) == expected, "trace of a 200 x 200 matrix with diagonal 0..199 is %g, expected %g",
+          trace(m), expected);
+}
+
+void test_trace_rejects_non_square() {
+    CHECK_THROWS(std::invalid_argument, trace(Matrix(2, 3)));
+    CHECK_THROWS(std::invalid_argument, trace(Matrix(3, 2)));
+    CHECK_THROWS(std::invalid_argument, trace(Matrix(1, 4)));
+    CHECK_THROWS(std::invalid_argument, trace(Matrix(4, 1)));
+}
+
 struct Test {
     const char* name;
     void (*run)();
@@ -753,6 +823,14 @@ const Test kTests[] = {
     {"transpose leaves matrix unchanged", test_transpose_leaves_matrix_unchanged},
     {"transpose is separate", test_transpose_is_separate},
     {"large transpose", test_large_transpose},
+    {"trace of square matrices", test_trace_of_square_matrices},
+    {"trace single entry", test_trace_single_entry},
+    {"trace of identity and zeros", test_trace_of_identity_and_zeros},
+    {"trace ignores entries off the diagonal", test_trace_ignores_entries_off_the_diagonal},
+    {"trace with add, scale and transpose", test_trace_with_add_scale_and_transpose},
+    {"trace leaves matrix unchanged", test_trace_leaves_matrix_unchanged},
+    {"large trace", test_large_trace},
+    {"trace rejects non-square", test_trace_rejects_non_square},
 };
 
 }

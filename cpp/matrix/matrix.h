@@ -32,4 +32,6 @@ Matrix operator*(double m, Matrix mat);
 Matrix identity(std::size_t n);
 
 Matrix transpose(Matrix mat); 
+
+double trace(Matrix mat); 
 }

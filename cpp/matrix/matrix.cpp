@@ -141,4 +141,18 @@ Matrix transpose(Matrix mat) {
 
     return res; 
 }
+
+double trace(Matrix mat) {
+    std::size_t n = mat.rows();
+    if(n != mat.cols()) {
+        throw std::invalid_argument("dont u know traces require square matrices??"); 
+    }
+    
+    double ans = 0; 
+    for(std::size_t i = 0; i < n; i++) {
+        ans += mat.at(i, i);  
+    } 
+    return ans; 
+}
+
 }
