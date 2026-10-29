@@ -25,5 +25,9 @@ Matrix operator+(Matrix mat_a, Matrix mat_b);
 
 Matrix operator-(Matrix mat_a, Matrix mat_b); 
     
+Matrix operator*(Matrix mat, double t); 
+
+Matrix operator*(double m, Matrix mat);
+
 Matrix identity(std::size_t n);
 }

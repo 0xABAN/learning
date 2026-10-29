@@ -485,6 +485,114 @@ void test_add_and_subtract_reject_shape_mismatch() {
     CHECK_THROWS(std::invalid_argument, Matrix(2, 2) - Matrix(1, 1));
 }
 
+void test_scalar_times_matrix() {
+    Matrix m{{1, 2}, {3, 4}};
+    Matrix expected{{3, 6}, {9, 12}};
+    CHECK(3 * m == expected, "3 * {{1, 2}, {3, 4}} should be {{3, 6}, {9, 12}}");
+}
+
+void test_matrix_times_scalar() {
+    Matrix m{{1, 2}, {3, 4}};
+    Matrix expected{{3, 6}, {9, 12}};
+    CHECK(m * 3 == expected, "{{1, 2}, {3, 4}} * 3 should be {{3, 6}, {9, 12}}");
+}
+
+void test_scalar_order_does_not_matter() {
+    Matrix m{{1.5, -2, 0}, {4, 0.25, -8}};
+    CHECK(2.5 * m == m * 2.5, "2.5 * m should equal m * 2.5");
+    CHECK(-4 * m == m * -4, "-4 * m should equal m * -4");
+}
+
+void test_scalar_multiplication_non_square() {
+    Matrix m{{1, 2, 3}, {4, 5, 6}};
+    Matrix expected{{-2, -4, -6}, {-8, -10, -12}};
+
+    Matrix left = -2 * m;
+    CHECK(left.rows() == 2 && left.cols() == 3, "-2 * (a 2 x 3 matrix) is %zu x %zu", left.rows(), left.cols());
+    CHECK(left == expected, "-2 * {{1, 2, 3}, {4, 5, 6}} is wrong");
+
+    Matrix right = m * -2;
+    CHECK(right.rows() == 2 && right.cols() == 3, "(a 2 x 3 matrix) * -2 is %zu x %zu", right.rows(), right.cols());
+    CHECK(right == expected, "{{1, 2, 3}, {4, 5, 6}} * -2 is wrong");
+
+    Matrix column{{1}, {2}, {3}};
+    Matrix halved{{0.5}, {1}, {1.5}};
+    CHECK(0.5 * column == halved, "0.5 * {{1}, {2}, {3}} should be {{0.5}, {1}, {1.5}}");
+    CHECK(column * 0.5 == halved, "{{1}, {2}, {3}} * 0.5 should be {{0.5}, {1}, {1.5}}");
+}
+
+void test_multiply_by_zero_one_and_minus_one() {
+    Matrix m{{1, -2, 3.5}, {0, 7, -0.5}};
+
+    CHECK(0 * m == Matrix(2, 3), "0 * m should be a 2 x 3 matrix of zeros");
+    CHECK(m * 0 == Matrix(2, 3), "m * 0 should be a 2 x 3 matrix of zeros");
+    CHECK(1 * m == m, "1 * m should equal m");
+    CHECK(m * 1 == m, "m * 1 should equal m");
+
+    Matrix negated{{-1, 2, -3.5}, {0, -7, 0.5}};
+    CHECK(-1 * m == negated, "-1 * m should negate every entry");
+    CHECK(m + m * -1 == Matrix(2, 3), "m + m * -1 should be all zeros");
+}
+
+void test_scalar_multiplication_single_entry() {
+    CHECK(4 * Matrix{{-2.5}} == Matrix{{-10}}, "4 * {{-2.5}} should be {{-10}}");
+    CHECK(Matrix{{-2.5}} * 4 == Matrix{{-10}}, "{{-2.5}} * 4 should be {{-10}}");
+}
+
+void test_scalar_multiplication_chain() {
+    Matrix m{{1, 2}, {3, 4}};
+    CHECK(m * 2 * 3 == m * 6, "m * 2 * 3 should equal m * 6");
+    CHECK(2 * (3 * m) == 6 * m, "2 * (3 * m) should equal 6 * m");
+    CHECK(2 * m * 3 == 6 * m, "2 * m * 3 should equal 6 * m");
+}
+
+void test_scalar_distributes_over_add() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix b{{5, -6}, {0, 8}};
+    CHECK(3 * (a + b) == 3 * a + 3 * b, "3 * (a + b) should equal 3 * a + 3 * b");
+    CHECK((a - b) * 2 == a * 2 - b * 2, "(a - b) * 2 should equal a * 2 - b * 2");
+    CHECK(a + a == 2 * a, "a + a should equal 2 * a");
+}
+
+void test_scalar_multiplication_leaves_matrix_unchanged() {
+    Matrix m{{1, 2}, {3, 4}};
+    Matrix before{{1, 2}, {3, 4}};
+
+    (void)(5 * m);
+    CHECK(m == before, "5 * m changed m");
+
+    (void)(m * 5);
+    CHECK(m == before, "m * 5 changed m");
+}
+
+void test_scaled_matrix_is_separate() {
+    Matrix m{{1, 2}, {3, 4}};
+
+    Matrix left = 2 * m;
+    left.at(0, 0) = 100;
+    CHECK(m.at(0, 0) == 1, "changing 2 * m changed m");
+
+    Matrix right = m * 2;
+    right.at(1, 1) = 100;
+    CHECK(m.at(1, 1) == 4, "changing m * 2 changed m");
+}
+
+void test_large_scalar_multiplication() {
+    const std::size_t n = 100;
+    Matrix m(n, n);
+    Matrix expected(n, n);
+
+    for (std::size_t row = 0; row < n; row++) {
+        for (std::size_t col = 0; col < n; col++) {
+            m.at(row, col) = row * 3.0 - col;
+            expected.at(row, col) = row * -1.5 + col * 0.5;
+        }
+    }
+
+    CHECK(-0.5 * m == expected, "-0.5 times a 100 x 100 matrix is wrong");
+    CHECK(m * -0.5 == expected, "a 100 x 100 matrix times -0.5 is wrong");
+}
+
 struct Test {
     const char* name;
     void (*run)();
@@ -535,6 +643,17 @@ const Test kTests[] = {
     {"sum is a separate matrix", test_sum_is_a_separate_matrix},
     {"large add and subtract", test_large_add_and_subtract},
     {"add and subtract reject shape mismatch", test_add_and_subtract_reject_shape_mismatch},
+    {"scalar times matrix", test_scalar_times_matrix},
+    {"matrix times scalar", test_matrix_times_scalar},
+    {"scalar order does not matter", test_scalar_order_does_not_matter},
+    {"scalar multiplication non-square", test_scalar_multiplication_non_square},
+    {"multiply by zero, one and minus one", test_multiply_by_zero_one_and_minus_one},
+    {"scalar multiplication single entry", test_scalar_multiplication_single_entry},
+    {"scalar multiplication chain", test_scalar_multiplication_chain},
+    {"scalar distributes over add", test_scalar_distributes_over_add},
+    {"scalar multiplication leaves matrix unchanged", test_scalar_multiplication_leaves_matrix_unchanged},
+    {"scaled matrix is separate", test_scaled_matrix_is_separate},
+    {"large scalar multiplication", test_large_scalar_multiplication},
 };
 
 }

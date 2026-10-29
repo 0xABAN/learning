@@ -92,6 +92,32 @@ Matrix operator-(Matrix mat_a, Matrix mat_b) {
     return res; 
 }
 
+Matrix operator*(Matrix mat_a, double t) {
+    std::size_t m = mat_a.rows();
+    std::size_t n = mat_a.cols(); 
+    
+    Matrix res(m, n); 
+    for(std::size_t r = 0; r < m; r++) {
+        for(std::size_t c = 0; c < n; c++) {
+            res.at(r, c) = mat_a.at(r, c) * t;  
+        }
+    }
+    return res; 
+}
+
+Matrix operator*(double t, Matrix mat_a) {
+    std::size_t m = mat_a.rows();
+    std::size_t n = mat_a.cols(); 
+    
+    Matrix res(m, n); 
+    for(std::size_t r = 0; r < m; r++) {
+        for(std::size_t c = 0; c < n; c++) {
+            res.at(r, c) = mat_a.at(r, c) * t;  
+        }
+    }
+    return res; 
+}
+
 Matrix identity(std::size_t n) {
     Matrix mat(n, n); 
     
