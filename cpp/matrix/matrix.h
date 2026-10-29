@@ -29,6 +29,8 @@ Matrix operator*(Matrix mat, double t);
 
 Matrix operator*(double m, Matrix mat);
 
+Matrix operator*(Matrix mat_a, Matrix mat_b); 
+
 Matrix identity(std::size_t n);
 
 Matrix transpose(Matrix mat); 

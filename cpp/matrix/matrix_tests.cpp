@@ -752,6 +752,174 @@ void test_trace_rejects_non_square() {
     CHECK_THROWS(std::invalid_argument, trace(Matrix(4, 1)));
 }
 
+Matrix product_by_definition(Matrix a, Matrix b) {
+    Matrix product(a.rows(), b.cols());
+    for (std::size_t row = 0; row < a.rows(); row++) {
+        for (std::size_t col = 0; col < b.cols(); col++) {
+            for (std::size_t k = 0; k < a.cols(); k++) {
+                product.at(row, col) += a.at(row, k) * b.at(k, col);
+            }
+        }
+    }
+    return product;
+}
+
+void test_multiply_square() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix b{{5, 6}, {7, 8}};
+    Matrix expected{{19, 22}, {43, 50}};
+    CHECK(a * b == expected, "{{1, 2}, {3, 4}} * {{5, 6}, {7, 8}} should be {{19, 22}, {43, 50}}");
+}
+
+void test_multiply_non_square() {
+    Matrix a{{1, 2, 3}, {4, 5, 6}};
+    Matrix b{{7, 8}, {9, 10}, {11, 12}};
+
+    Matrix ab = a * b;
+    Matrix ab_expected{{58, 64}, {139, 154}};
+    CHECK(ab.rows() == 2 && ab.cols() == 2, "(2 x 3) * (3 x 2) is %zu x %zu, expected 2 x 2", ab.rows(), ab.cols());
+    CHECK(ab == ab_expected, "{{1, 2, 3}, {4, 5, 6}} * {{7, 8}, {9, 10}, {11, 12}} should be {{58, 64}, {139, 154}}");
+
+    Matrix ba = b * a;
+    Matrix ba_expected{{39, 54, 69}, {49, 68, 87}, {59, 82, 105}};
+    CHECK(ba.rows() == 3 && ba.cols() == 3, "(3 x 2) * (2 x 3) is %zu x %zu, expected 3 x 3", ba.rows(), ba.cols());
+    CHECK(ba == ba_expected, "{{7, 8}, {9, 10}, {11, 12}} * {{1, 2, 3}, {4, 5, 6}} is wrong");
+
+    Matrix c{{1, 0, 2}, {0, 1, -1}};
+    Matrix d{{3, 1, 0, 2}, {1, 1, 1, 1}, {0, 2, 1, -1}};
+    Matrix cd_expected{{3, 5, 2, 0}, {1, -1, 0, 2}};
+    Matrix cd = c * d;
+    CHECK(cd.rows() == 2 && cd.cols() == 4, "(2 x 3) * (3 x 4) is %zu x %zu, expected 2 x 4", cd.rows(), cd.cols());
+    CHECK(cd == cd_expected, "a (2 x 3) * (3 x 4) product is wrong");
+}
+
+void test_multiply_row_and_column_vectors() {
+    Matrix row{{1, 2, 3}};
+    Matrix column{{4}, {5}, {6}};
+
+    Matrix dot = row * column;
+    CHECK(dot.rows() == 1 && dot.cols() == 1, "(1 x 3) * (3 x 1) is %zu x %zu, expected 1 x 1", dot.rows(), dot.cols());
+    CHECK(dot == Matrix{{32}}, "{{1, 2, 3}} * {{4}, {5}, {6}} should be {{32}}");
+
+    Matrix outer = column * row;
+    Matrix outer_expected{{4, 8, 12}, {5, 10, 15}, {6, 12, 18}};
+    CHECK(outer.rows() == 3 && outer.cols() == 3, "(3 x 1) * (1 x 3) is %zu x %zu, expected 3 x 3",
+          outer.rows(), outer.cols());
+    CHECK(outer == outer_expected, "{{4}, {5}, {6}} * {{1, 2, 3}} is wrong");
+}
+
+void test_multiply_single_entries() {
+    CHECK(Matrix{{-2.5}} * Matrix{{4}} == Matrix{{-10}}, "{{-2.5}} * {{4}} should be {{-10}}");
+
+    Matrix three{{3}};
+    Matrix row{{1, 2}};
+    Matrix scaled_row{{3, 6}};
+    CHECK(three * row == scaled_row, "{{3}} * {{1, 2}} should be {{3, 6}}");
+
+    Matrix square{{1, 2}, {3, 4}};
+    CHECK_THROWS(std::invalid_argument, three * square);
+}
+
+void test_multiply_by_identity() {
+    Matrix a{{1, 2, 3}, {4, 5, 6}};
+    CHECK(identity(2) * a == a, "identity(2) * a should equal a for a 2 x 3 matrix a");
+    CHECK(a * identity(3) == a, "a * identity(3) should equal a for a 2 x 3 matrix a");
+
+    Matrix square{{2, -1}, {0.5, 3}};
+    CHECK(square * identity(2) == square && identity(2) * square == square,
+          "multiplying by identity(2) on either side should leave a 2 x 2 matrix unchanged");
+}
+
+void test_multiply_by_zero_matrix() {
+    Matrix a{{1, 2, 3}, {4, 5, 6}};
+    CHECK(a * Matrix(3, 4) == Matrix(2, 4), "a 2 x 3 matrix times a 3 x 4 zero matrix should be a 2 x 4 zero matrix");
+    CHECK(Matrix(5, 2) * a == Matrix(5, 3), "a 5 x 2 zero matrix times a 2 x 3 matrix should be a 5 x 3 zero matrix");
+}
+
+void test_multiply_order_matters() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix b{{0, 1}, {1, 0}};
+    Matrix ab{{2, 1}, {4, 3}};
+    Matrix ba{{3, 4}, {1, 2}};
+
+    CHECK(a * b == ab, "{{1, 2}, {3, 4}} * {{0, 1}, {1, 0}} should swap the columns: {{2, 1}, {4, 3}}");
+    CHECK(b * a == ba, "{{0, 1}, {1, 0}} * {{1, 2}, {3, 4}} should swap the rows: {{3, 4}, {1, 2}}");
+}
+
+void test_multiply_is_associative() {
+    Matrix a{{1, 2}, {3, 4}, {5, 6}};
+    Matrix b{{1, -1, 2}, {0, 3, 1}};
+    Matrix c{{2, 0}, {1, 1}, {-1, 4}};
+    CHECK((a * b) * c == a * (b * c), "(a * b) * c should equal a * (b * c)");
+}
+
+void test_multiply_with_add_scale_and_transpose() {
+    Matrix a{{1, 2, 3}, {4, 5, 6}};
+    Matrix b{{1, 0}, {2, -1}, {0, 3}};
+    Matrix c{{-2, 1}, {0, 4}, {5, 5}};
+
+    CHECK(a * (b + c) == a * b + a * c, "a * (b + c) should equal a * b + a * c");
+    CHECK((b - c) * a == b * a - c * a, "(b - c) * a should equal b * a - c * a");
+    CHECK((2 * a) * b == 2 * (a * b), "(2 * a) * b should equal 2 * (a * b)");
+    CHECK(a * (b * 3) == (a * b) * 3, "a * (b * 3) should equal (a * b) * 3");
+    CHECK(transpose(a * b) == transpose(b) * transpose(a),
+          "transpose(a * b) should equal transpose(b) * transpose(a)");
+}
+
+void test_multiply_leaves_operands_unchanged() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix b{{5, 6}, {7, 8}};
+    Matrix a_before{{1, 2}, {3, 4}};
+    Matrix b_before{{5, 6}, {7, 8}};
+
+    (void)(a * b);
+    CHECK(a == a_before, "a * b changed a");
+    CHECK(b == b_before, "a * b changed b");
+}
+
+void test_product_is_separate() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix i = identity(2);
+    Matrix product = a * i;
+
+    product.at(0, 0) = 100;
+    CHECK(a.at(0, 0) == 1, "changing a * identity changed a");
+    CHECK(i.at(0, 0) == 1, "changing a * identity changed the identity matrix");
+}
+
+void test_large_multiply() {
+    const std::size_t rows = 40;
+    const std::size_t inner = 70;
+    const std::size_t cols = 30;
+
+    Matrix a(rows, inner);
+    Matrix b(inner, cols);
+    for (std::size_t row = 0; row < rows; row++) {
+        for (std::size_t k = 0; k < inner; k++) {
+            a.at(row, k) = static_cast<double>((row * 7 + k * 3) % 11) - 5;
+        }
+    }
+    for (std::size_t k = 0; k < inner; k++) {
+        for (std::size_t col = 0; col < cols; col++) {
+            b.at(k, col) = static_cast<double>((k * 5 + col * 2) % 13) - 6;
+        }
+    }
+
+    Matrix product = a * b;
+    CHECK(product.rows() == rows && product.cols() == cols, "(40 x 70) * (70 x 30) is %zu x %zu, expected 40 x 30",
+          product.rows(), product.cols());
+    CHECK(product == product_by_definition(a, b), "a (40 x 70) * (70 x 30) product is wrong");
+}
+
+void test_multiply_rejects_mismatched_shapes() {
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 3) * Matrix(2, 3));
+    CHECK_THROWS(std::invalid_argument, Matrix(3, 2) * Matrix(3, 2));
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 2) * Matrix(3, 3));
+    CHECK_THROWS(std::invalid_argument, Matrix(1, 4) * Matrix(1, 4));
+    CHECK_THROWS(std::invalid_argument, Matrix(4, 1) * Matrix(4, 1));
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 3) * Matrix(4, 2));
+}
+
 struct Test {
     const char* name;
     void (*run)();
@@ -831,6 +999,19 @@ const Test kTests[] = {
     {"trace leaves matrix unchanged", test_trace_leaves_matrix_unchanged},
     {"large trace", test_large_trace},
     {"trace rejects non-square", test_trace_rejects_non_square},
+    {"multiply square", test_multiply_square},
+    {"multiply non-square", test_multiply_non_square},
+    {"multiply row and column vectors", test_multiply_row_and_column_vectors},
+    {"multiply single entries", test_multiply_single_entries},
+    {"multiply by identity", test_multiply_by_identity},
+    {"multiply by zero matrix", test_multiply_by_zero_matrix},
+    {"multiply order matters", test_multiply_order_matters},
+    {"multiply is associative", test_multiply_is_associative},
+    {"multiply with add, scale and transpose", test_multiply_with_add_scale_and_transpose},
+    {"multiply leaves operands unchanged", test_multiply_leaves_operands_unchanged},
+    {"product is separate", test_product_is_separate},
+    {"large multiply", test_large_multiply},
+    {"multiply rejects mismatched shapes", test_multiply_rejects_mismatched_shapes},
 };
 
 }

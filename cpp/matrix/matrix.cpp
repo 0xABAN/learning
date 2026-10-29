@@ -155,4 +155,26 @@ double trace(Matrix mat) {
     return ans; 
 }
 
+Matrix operator*(Matrix mat_a, Matrix mat_b) {
+    if(mat_a.cols() != mat_b.rows()) {
+        throw std::invalid_argument("bruh"); 
+    }
+
+    std::size_t v = mat_a.cols(); 
+    std::size_t m = mat_a.rows(); 
+    std::size_t n = mat_b.cols(); 
+    
+    Matrix res(m, n); 
+
+    for(std::size_t i = 0; i < m; i++) {
+        for(std::size_t j = 0; j < n; j++) {
+            for(std::size_t k = 0; k < v; k++) {
+               res.at(i, j) += mat_a.at(i, k) * mat_b.at(k, j);  
+            }
+        } 
+    }
+
+    return res; 
+}
+
 }
