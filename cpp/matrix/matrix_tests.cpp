@@ -366,6 +366,124 @@ void test_comparison_leaves_matrices_unchanged() {
     CHECK(b.rows() == 2 && b.cols() == 2 && b.at(1, 1) == 5, "comparing changed the right matrix");
 }
 
+void test_add() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix b{{10, 20}, {30, 40}};
+    Matrix expected{{11, 22}, {33, 44}};
+    CHECK(a + b == expected, "{{1, 2}, {3, 4}} + {{10, 20}, {30, 40}} should be {{11, 22}, {33, 44}}");
+}
+
+void test_subtract() {
+    Matrix a{{10, 20}, {30, 40}};
+    Matrix b{{1, 2}, {3, 4}};
+    Matrix expected{{9, 18}, {27, 36}};
+    CHECK(a - b == expected, "{{10, 20}, {30, 40}} - {{1, 2}, {3, 4}} should be {{9, 18}, {27, 36}}");
+
+    Matrix reversed{{-9, -18}, {-27, -36}};
+    CHECK(b - a == reversed, "{{1, 2}, {3, 4}} - {{10, 20}, {30, 40}} should be {{-9, -18}, {-27, -36}}");
+}
+
+void test_add_and_subtract_non_square() {
+    Matrix a{{1, 2, 3}, {4, 5, 6}};
+    Matrix b{{6, 5, 4}, {3, 2, 1}};
+    Matrix sum{{7, 7, 7}, {7, 7, 7}};
+    Matrix difference{{-5, -3, -1}, {1, 3, 5}};
+
+    Matrix result = a + b;
+    CHECK(result.rows() == 2 && result.cols() == 3, "a 2 x 3 sum is %zu x %zu", result.rows(), result.cols());
+    CHECK(result == sum, "{{1, 2, 3}, {4, 5, 6}} + {{6, 5, 4}, {3, 2, 1}} should be all 7s");
+    CHECK(a - b == difference, "{{1, 2, 3}, {4, 5, 6}} - {{6, 5, 4}, {3, 2, 1}} should be {{-5, -3, -1}, {1, 3, 5}}");
+
+    Matrix column{{1}, {2}, {3}};
+    Matrix doubled{{2}, {4}, {6}};
+    CHECK(column + column == doubled, "{{1}, {2}, {3}} + itself should be {{2}, {4}, {6}}");
+}
+
+void test_add_and_subtract_single_entry() {
+    CHECK(Matrix{{2.5}} + Matrix{{-4}} == Matrix{{-1.5}}, "{{2.5}} + {{-4}} should be {{-1.5}}");
+    CHECK(Matrix{{2.5}} - Matrix{{-4}} == Matrix{{6.5}}, "{{2.5}} - {{-4}} should be {{6.5}}");
+}
+
+void test_zero_matrix_changes_nothing() {
+    Matrix a{{1, -2}, {3.5, 0}};
+    CHECK(a + Matrix(2, 2) == a, "adding a zero matrix changed the matrix");
+    CHECK(Matrix(2, 2) + a == a, "adding to a zero matrix should give the other matrix");
+    CHECK(a - Matrix(2, 2) == a, "subtracting a zero matrix changed the matrix");
+    CHECK(a - a == Matrix(2, 2), "a matrix minus itself should be all zeros");
+}
+
+void test_add_is_commutative() {
+    Matrix a{{1, 2, 3}, {4, 5, 6}};
+    Matrix b{{-1, 0.5, 8}, {2, -7, 0.25}};
+    CHECK(a + b == b + a, "a + b should equal b + a");
+}
+
+void test_add_and_subtract_chain() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix b{{5, 6}, {7, 8}};
+    Matrix c{{-1, -1}, {-1, -1}};
+
+    Matrix expected{{5, 7}, {9, 11}};
+    CHECK(a + b + c == expected, "{{1, 2}, {3, 4}} + {{5, 6}, {7, 8}} + {{-1, -1}, {-1, -1}} should be {{5, 7}, {9, 11}}");
+    CHECK(a + b - b == a, "a + b - b should equal a");
+    CHECK((a - b) + b == a, "(a - b) + b should equal a");
+}
+
+void test_add_and_subtract_leave_operands_unchanged() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix b{{10, 20}, {30, 40}};
+    Matrix a_before{{1, 2}, {3, 4}};
+    Matrix b_before{{10, 20}, {30, 40}};
+
+    (void)(a + b);
+    (void)(a - b);
+    CHECK(a == a_before, "a + b or a - b changed a");
+    CHECK(b == b_before, "a + b or a - b changed b");
+}
+
+void test_sum_is_a_separate_matrix() {
+    Matrix a{{1, 2}, {3, 4}};
+    Matrix b{{10, 20}, {30, 40}};
+    Matrix sum = a + b;
+
+    sum.at(0, 0) = 100;
+    CHECK(a.at(0, 0) == 1 && b.at(0, 0) == 10, "changing the sum changed one of the operands");
+}
+
+void test_large_add_and_subtract() {
+    const std::size_t n = 100;
+    Matrix a(n, n);
+    Matrix b(n, n);
+    Matrix sum(n, n);
+    Matrix difference(n, n);
+
+    for (std::size_t row = 0; row < n; row++) {
+        for (std::size_t col = 0; col < n; col++) {
+            a.at(row, col) = row * 3.0 + col;
+            b.at(row, col) = col * 2.0 - row;
+            sum.at(row, col) = row * 2.0 + col * 3.0;
+            difference.at(row, col) = row * 4.0 - col;
+        }
+    }
+
+    CHECK(a + b == sum, "a 100 x 100 sum is wrong");
+    CHECK(a - b == difference, "a 100 x 100 difference is wrong");
+}
+
+void test_add_and_subtract_reject_shape_mismatch() {
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 3) + Matrix(3, 2));
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 2) + Matrix(2, 3));
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 3) + Matrix(2, 2));
+    CHECK_THROWS(std::invalid_argument, Matrix(3, 2) + Matrix(2, 2));
+    CHECK_THROWS(std::invalid_argument, Matrix(1, 1) + Matrix(2, 2));
+
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 3) - Matrix(3, 2));
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 2) - Matrix(2, 3));
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 3) - Matrix(2, 2));
+    CHECK_THROWS(std::invalid_argument, Matrix(3, 2) - Matrix(2, 2));
+    CHECK_THROWS(std::invalid_argument, Matrix(2, 2) - Matrix(1, 1));
+}
+
 struct Test {
     const char* name;
     void (*run)();
@@ -405,6 +523,17 @@ const Test kTests[] = {
     {"entries must match exactly", test_entries_must_match_exactly},
     {"not equal", test_not_equal},
     {"comparison leaves matrices unchanged", test_comparison_leaves_matrices_unchanged},
+    {"add", test_add},
+    {"subtract", test_subtract},
+    {"add and subtract non-square", test_add_and_subtract_non_square},
+    {"add and subtract single entry", test_add_and_subtract_single_entry},
+    {"zero matrix changes nothing", test_zero_matrix_changes_nothing},
+    {"add is commutative", test_add_is_commutative},
+    {"add and subtract chain", test_add_and_subtract_chain},
+    {"add and subtract leave operands unchanged", test_add_and_subtract_leave_operands_unchanged},
+    {"sum is a separate matrix", test_sum_is_a_separate_matrix},
+    {"large add and subtract", test_large_add_and_subtract},
+    {"add and subtract reject shape mismatch", test_add_and_subtract_reject_shape_mismatch},
 };
 
 }

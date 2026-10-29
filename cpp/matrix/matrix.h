@@ -18,7 +18,11 @@ public:
     
     double& at(std::size_t row, std::size_t col); 
     
-    bool operator==(Matrix b); 
+    bool operator==(Matrix other); 
+
+    Matrix operator+(Matrix other); 
+    
+    Matrix operator-(Matrix other); 
 
     static Matrix identity(std::size_t n); 
 };

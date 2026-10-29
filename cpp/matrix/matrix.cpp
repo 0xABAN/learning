@@ -47,13 +47,43 @@ bool Matrix::operator==(Matrix other) {
     
     for(std::size_t r = 0; r < rows(); r++) {
         for(std::size_t c = 0; c < cols(); c++) {
-            if(this->at(r, c) != other.at(r, c))  {
+            if(at(r, c) != other.at(r, c))  {
                return false; 
             }
         }
     }
 
     return true;
+}
+
+Matrix Matrix::operator+(Matrix other) {
+    if(rows() != other.rows() || cols() != other.cols()) {
+        throw std::invalid_argument("bruh");
+    }
+    
+    Matrix res(rows(), cols()); 
+    for(std::size_t r = 0; r < rows(); r++) {
+        for(std::size_t c = 0; c < cols(); c++) {
+            res.at(r, c) = at(r, c) + other.at(r, c);
+        }
+    }
+
+    return res; 
+}
+
+Matrix Matrix::operator-(Matrix other) {
+    if(rows() != other.rows() || cols() != other.cols()) {
+        throw std::invalid_argument("bruh");
+    }
+    
+    Matrix res(rows(), cols()); 
+    for(std::size_t r = 0; r < rows(); r++) {
+        for(std::size_t c = 0; c < cols(); c++) {
+            res.at(r, c) = at(r, c) - other.at(r, c);
+        }
+    }
+
+    return res; 
 }
 
 Matrix Matrix::identity(std::size_t n) {
@@ -65,5 +95,4 @@ Matrix Matrix::identity(std::size_t n) {
     
     return mat; 
 }
-
 }
