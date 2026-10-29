@@ -127,4 +127,18 @@ Matrix identity(std::size_t n) {
     
     return mat; 
 }
+
+Matrix transpose(Matrix mat) {
+    std::size_t m = mat.rows();
+    std::size_t n = mat.cols(); 
+    Matrix res(n, m); 
+
+    for(std::size_t r = 0; r < m; r++) {
+        for(std::size_t c = 0; c < n; c++) {
+            res.at(c, r) = mat.at(r, c);
+        }
+    }
+
+    return res; 
+}
 }

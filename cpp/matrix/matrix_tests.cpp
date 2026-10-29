@@ -593,6 +593,95 @@ void test_large_scalar_multiplication() {
     CHECK(m * -0.5 == expected, "a 100 x 100 matrix times -0.5 is wrong");
 }
 
+void test_transpose_non_square() {
+    Matrix m{{1, 2, 3}, {4, 5, 6}};
+    Matrix t = transpose(m);
+    Matrix expected{{1, 4}, {2, 5}, {3, 6}};
+
+    CHECK(t.rows() == 3 && t.cols() == 2, "the transpose of a 2 x 3 matrix is %zu x %zu", t.rows(), t.cols());
+    CHECK(t == expected, "transpose({{1, 2, 3}, {4, 5, 6}}) should be {{1, 4}, {2, 5}, {3, 6}}");
+
+    Matrix tall{{1, 2}, {3, 4}, {5, 6}, {7, 8}};
+    Matrix wide{{1, 3, 5, 7}, {2, 4, 6, 8}};
+    CHECK(transpose(tall) == wide, "transpose of a 4 x 2 matrix is wrong");
+}
+
+void test_transpose_square() {
+    Matrix m{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    Matrix expected{{1, 4, 7}, {2, 5, 8}, {3, 6, 9}};
+    CHECK(transpose(m) == expected, "transpose of {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} is wrong");
+}
+
+void test_transpose_row_and_column_vectors() {
+    Matrix row{{1, 2, 3, 4}};
+    Matrix column{{1}, {2}, {3}, {4}};
+    CHECK(transpose(row) == column, "transpose of {{1, 2, 3, 4}} should be {{1}, {2}, {3}, {4}}");
+    CHECK(transpose(column) == row, "transpose of {{1}, {2}, {3}, {4}} should be {{1, 2, 3, 4}}");
+}
+
+void test_transpose_single_entry() {
+    CHECK(transpose(Matrix{{-7.5}}) == Matrix{{-7.5}}, "transpose of {{-7.5}} should be {{-7.5}}");
+}
+
+void test_transpose_twice_gives_original() {
+    Matrix m{{1, -2, 3.5}, {0, 7, -0.25}};
+    CHECK(transpose(transpose(m)) == m, "transposing twice should give back the original matrix");
+}
+
+void test_symmetric_matrices_are_their_own_transpose() {
+    Matrix i4 = identity(4);
+    CHECK(transpose(i4) == i4, "transpose of identity(4) should be identity(4)");
+
+    Matrix symmetric{{1, 2, 3}, {2, 5, 6}, {3, 6, 9}};
+    CHECK(transpose(symmetric) == symmetric, "a symmetric matrix should equal its transpose");
+}
+
+void test_transpose_with_add_and_scale() {
+    Matrix a{{1, 2, 3}, {4, 5, 6}};
+    Matrix b{{-1, 0, 2}, {8, -3, 0.5}};
+    CHECK(transpose(a + b) == transpose(a) + transpose(b), "transpose(a + b) should equal transpose(a) + transpose(b)");
+    CHECK(transpose(a - b) == transpose(a) - transpose(b), "transpose(a - b) should equal transpose(a) - transpose(b)");
+    CHECK(transpose(3 * a) == 3 * transpose(a), "transpose(3 * a) should equal 3 * transpose(a)");
+}
+
+void test_transpose_leaves_matrix_unchanged() {
+    Matrix m{{1, 2, 3}, {4, 5, 6}};
+    Matrix before{{1, 2, 3}, {4, 5, 6}};
+
+    (void)transpose(m);
+    CHECK(m == before, "transpose(m) changed m");
+}
+
+void test_transpose_is_separate() {
+    Matrix m{{1, 2}, {3, 4}};
+    Matrix t = transpose(m);
+
+    t.at(0, 1) = 100;
+    CHECK(m.at(0, 1) == 2 && m.at(1, 0) == 3, "changing the transpose changed the original");
+}
+
+void test_large_transpose() {
+    const std::size_t rows = 60;
+    const std::size_t cols = 150;
+    Matrix m(rows, cols);
+    for (std::size_t row = 0; row < rows; row++) {
+        for (std::size_t col = 0; col < cols; col++) {
+            m.at(row, col) = row * 1000.0 + col;
+        }
+    }
+
+    Matrix t = transpose(m);
+    CHECK(t.rows() == cols && t.cols() == rows, "the transpose of a 60 x 150 matrix is %zu x %zu", t.rows(), t.cols());
+
+    for (std::size_t row = 0; row < cols; row++) {
+        for (std::size_t col = 0; col < rows; col++) {
+            double expected = col * 1000.0 + row;
+            CHECK(t.at(row, col) == expected, "transpose.at(%zu, %zu) is %g, expected %g",
+                  row, col, t.at(row, col), expected);
+        }
+    }
+}
+
 struct Test {
     const char* name;
     void (*run)();
@@ -654,6 +743,16 @@ const Test kTests[] = {
     {"scalar multiplication leaves matrix unchanged", test_scalar_multiplication_leaves_matrix_unchanged},
     {"scaled matrix is separate", test_scaled_matrix_is_separate},
     {"large scalar multiplication", test_large_scalar_multiplication},
+    {"transpose non-square", test_transpose_non_square},
+    {"transpose square", test_transpose_square},
+    {"transpose row and column vectors", test_transpose_row_and_column_vectors},
+    {"transpose single entry", test_transpose_single_entry},
+    {"transpose twice gives original", test_transpose_twice_gives_original},
+    {"symmetric matrices are their own transpose", test_symmetric_matrices_are_their_own_transpose},
+    {"transpose with add and scale", test_transpose_with_add_and_scale},
+    {"transpose leaves matrix unchanged", test_transpose_leaves_matrix_unchanged},
+    {"transpose is separate", test_transpose_is_separate},
+    {"large transpose", test_large_transpose},
 };
 
 }
