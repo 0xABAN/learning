@@ -18,9 +18,9 @@ public:
     
     std::size_t cols() const; 
     
-    double& at(std::size_t row, std::size_t col); 
-
-    double at(std::size_t row, std::size_t col) const; 
+    std::vector<double>& operator[](std::size_t row); 
+    
+    const std::vector<double>& operator[](std::size_t row) const; 
     
     Matrix& operator+=(const Matrix& B); 
 

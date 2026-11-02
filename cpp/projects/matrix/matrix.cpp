@@ -35,18 +35,12 @@ size_t Matrix::cols() const {
     return mat[0].size();
 }
 
-double& Matrix::at(size_t row, size_t col) {
-    if(row < 0 || col < 0 || rows() <= row || cols() <= col) {
-        throw std::out_of_range("do that shit again"); 
-    }
-    return mat[row][col]; 
+vector<double>& Matrix::operator[](size_t row) {
+    return mat[row];
 }
 
-double Matrix::at(size_t row, size_t col) const {
-    if(row < 0 || col < 0 || rows() <= row || cols() <= col) {
-        throw std::out_of_range("do that shit again"); 
-    }
-    return mat[row][col]; 
+const vector<double>& Matrix::operator[](size_t row) const {
+    return mat[row];
 }
 
 bool operator==(const Matrix& A, const Matrix& B) {
@@ -57,7 +51,7 @@ bool operator==(const Matrix& A, const Matrix& B) {
 
     for(size_t r = 0; r < m; r++) {
         for(size_t c = 0; c < n; c++) {
-            if(A.at(r, c) != B.at(r, c))  {
+            if(A[r][c] != B[r][c])  {
                return false; 
             }
         }
@@ -76,7 +70,7 @@ Matrix& Matrix::operator+=(const Matrix& B) {
 
     for(size_t r = 0; r < m; r++) {
         for(size_t c = 0; c < n; c++) {
-            at(r, c) += B.at(r, c); 
+            mat[r][c] += B[r][c]; 
         }
     }
 
@@ -98,7 +92,7 @@ Matrix& Matrix::operator-=(const Matrix& B) {
 
     for(size_t r = 0; r < m; r++) {
         for(size_t c = 0; c < n; c++) {
-            at(r, c) -= B.at(r, c); 
+            mat[r][c] -= B[r][c]; 
         }
     }
 
@@ -116,7 +110,7 @@ Matrix& Matrix::operator*=(double t) {
 
     for(size_t r = 0; r < m; r++) {
         for(size_t c = 0; c < n; c++) {
-            at(r, c) *= t;
+            mat[r][c] *= t;
         }
     }
     
@@ -147,7 +141,7 @@ Matrix operator*(const Matrix& A, const Matrix& B) {
     for(size_t i = 0; i < m; i++) {
         for(size_t j = 0; j < n; j++) {
             for(size_t k = 0; k < v; k++) {
-               res.at(i, j) += A.at(i, k) * B.at(k, j);  
+               res[i][j] += A[i][k] * B[k][j];  
             }
         } 
     }
@@ -162,7 +156,7 @@ Matrix transpose(const Matrix& M) {
 
     for(size_t r = 0; r < m; r++) {
         for(size_t c = 0; c < n; c++) {
-            res.at(c, r) = M.at(r, c);
+            res[c][r] = M[r][c];
         }
     }
 

@@ -39,15 +39,15 @@ template <typename M>
 concept readable_through_const = requires(const M& m) {
     { m.rows() } -> std::convertible_to<std::size_t>;
     { m.cols() } -> std::convertible_to<std::size_t>;
-    { m.at(0, 0) } -> std::convertible_to<double>;
+    { m[0][0] } -> std::convertible_to<double>;
 };
 
 template <typename M>
-concept writable_through_at = requires(M& m) { m.at(0, 0) = 1.0; };
+concept writable_through_index = requires(M& m) { m[0][0] = 1.0; };
 
-static_assert(readable_through_const<Matrix>, "rows(), cols() and at() should work on a const Matrix");
-static_assert(writable_through_at<Matrix>, "at() on a Matrix should still return a reference you can write through");
-static_assert(!writable_through_at<const Matrix>, "at() on a const Matrix must not allow writing");
+static_assert(readable_through_const<Matrix>, "rows(), cols() and [r][c] should work on a const Matrix");
+static_assert(writable_through_index<Matrix>, "[r][c] on a Matrix should return a reference you can write through");
+static_assert(!writable_through_index<const Matrix>, "[r][c] on a const Matrix must not allow writing");
 
 void test_reports_its_shape() {
     Matrix m(2, 3);
@@ -86,86 +86,71 @@ void test_new_entries_are_zero() {
     Matrix m(2, 3);
     for (std::size_t row = 0; row < 2; row++) {
         for (std::size_t col = 0; col < 3; col++) {
-            CHECK(m.at(row, col) == 0, "Matrix(2, 3).at(%zu, %zu) is %g, expected 0",
-                  row, col, m.at(row, col));
+            CHECK(m[row][col] == 0, "Matrix(2, 3)[%zu][%zu] is %g, expected 0",
+                  row, col, m[row][col]);
         }
     }
 }
 
-void test_at_writes_and_reads_entries() {
+void test_index_writes_and_reads_entries() {
     Matrix m(2, 2);
-    m.at(1, 0) = 7;
-    m.at(0, 1) = -2.5;
+    m[1][0] = 7;
+    m[0][1] = -2.5;
 
-    CHECK(m.at(1, 0) == 7, "after writing 7 to (1, 0), it reads %g", m.at(1, 0));
-    CHECK(m.at(0, 1) == -2.5, "after writing -2.5 to (0, 1), it reads %g", m.at(0, 1));
-    CHECK(m.at(0, 0) == 0 && m.at(1, 1) == 0, "writing two entries changed another one");
+    CHECK(m[1][0] == 7, "after writing 7 to (1, 0), it reads %g", m[1][0]);
+    CHECK(m[0][1] == -2.5, "after writing -2.5 to (0, 1), it reads %g", m[0][1]);
+    CHECK(m[0][0] == 0 && m[1][1] == 0, "writing two entries changed another one");
 }
 
-void test_at_returns_a_reference() {
+void test_index_returns_a_reference() {
     Matrix m(2, 2);
 
-    double& entry = m.at(1, 1);
+    double& entry = m[1][1];
     entry = 4;
-    CHECK(m.at(1, 1) == 4, "writing 4 through a saved reference to (1, 1) left it at %g", m.at(1, 1));
+    CHECK(m[1][1] == 4, "writing 4 through a saved reference to (1, 1) left it at %g", m[1][1]);
 
-    m.at(1, 1) += 1.5;
-    CHECK(m.at(1, 1) == 5.5, "after += 1.5, (1, 1) is %g, expected 5.5", m.at(1, 1));
+    m[1][1] += 1.5;
+    CHECK(m[1][1] == 5.5, "after += 1.5, (1, 1) is %g, expected 5.5", m[1][1]);
 }
 
 void test_every_entry_is_separate() {
     Matrix m(3, 4);
     for (std::size_t row = 0; row < 3; row++) {
         for (std::size_t col = 0; col < 4; col++) {
-            m.at(row, col) = row * 10.0 + col;
+            m[row][col] = row * 10.0 + col;
         }
     }
 
     for (std::size_t row = 0; row < 3; row++) {
         for (std::size_t col = 0; col < 4; col++) {
             double expected = row * 10.0 + col;
-            CHECK(m.at(row, col) == expected, "Matrix(3, 4).at(%zu, %zu) is %g, expected %g",
-                  row, col, m.at(row, col), expected);
+            CHECK(m[row][col] == expected, "Matrix(3, 4)[%zu][%zu] is %g, expected %g",
+                  row, col, m[row][col], expected);
         }
     }
 }
 
 void test_row_and_column_vector_entries() {
     Matrix row(1, 5);
-    row.at(0, 4) = 3;
-    CHECK(row.at(0, 4) == 3, "Matrix(1, 5).at(0, 4) is %g, expected 3", row.at(0, 4));
+    row[0][4] = 3;
+    CHECK(row[0][4] == 3, "Matrix(1, 5)[0][4] is %g, expected 3", row[0][4]);
 
     Matrix column(5, 1);
-    column.at(4, 0) = 3;
-    CHECK(column.at(4, 0) == 3, "Matrix(5, 1).at(4, 0) is %g, expected 3", column.at(4, 0));
+    column[4][0] = 3;
+    CHECK(column[4][0] == 3, "Matrix(5, 1)[4][0] is %g, expected 3", column[4][0]);
 }
 
 void test_entries_keep_fractions_and_extremes() {
     Matrix m(1, 4);
-    m.at(0, 0) = 0.1;
-    m.at(0, 1) = -1e300;
-    m.at(0, 2) = 1e-300;
-    m.at(0, 3) = -0.5;
+    m[0][0] = 0.1;
+    m[0][1] = -1e300;
+    m[0][2] = 1e-300;
+    m[0][3] = -0.5;
 
-    CHECK(m.at(0, 0) == 0.1, "stored 0.1, read %g", m.at(0, 0));
-    CHECK(m.at(0, 1) == -1e300, "stored -1e300, read %g", m.at(0, 1));
-    CHECK(m.at(0, 2) == 1e-300, "stored 1e-300, read %g", m.at(0, 2));
-    CHECK(m.at(0, 3) == -0.5, "stored -0.5, read %g", m.at(0, 3));
-}
-
-void test_at_rejects_out_of_range_indexes() {
-    Matrix m(2, 3);
-    CHECK_THROWS(std::out_of_range, m.at(2, 0));
-    CHECK_THROWS(std::out_of_range, m.at(0, 3));
-    CHECK_THROWS(std::out_of_range, m.at(2, 3));
-    CHECK_THROWS(std::out_of_range, m.at(100, 0));
-    CHECK_THROWS(std::out_of_range, m.at(0, 100));
-    CHECK_THROWS(std::out_of_range, m.at(-1, 0));
-    CHECK_THROWS(std::out_of_range, m.at(0, -1));
-
-    Matrix single(1, 1);
-    CHECK_THROWS(std::out_of_range, single.at(1, 0));
-    CHECK_THROWS(std::out_of_range, single.at(0, 1));
+    CHECK(m[0][0] == 0.1, "stored 0.1, read %g", m[0][0]);
+    CHECK(m[0][1] == -1e300, "stored -1e300, read %g", m[0][1]);
+    CHECK(m[0][2] == 1e-300, "stored 1e-300, read %g", m[0][2]);
+    CHECK(m[0][3] == -0.5, "stored -0.5, read %g", m[0][3]);
 }
 
 void test_list_constructor_sets_shape() {
@@ -183,8 +168,8 @@ void test_list_constructor_fills_rows_in_order() {
 
     for (std::size_t row = 0; row < 2; row++) {
         for (std::size_t col = 0; col < 3; col++) {
-            CHECK(m.at(row, col) == expected[row][col], "{{1, 2, 3}, {4, 5, 6}}.at(%zu, %zu) is %g, expected %g",
-                  row, col, m.at(row, col), expected[row][col]);
+            CHECK(m[row][col] == expected[row][col], "{{1, 2, 3}, {4, 5, 6}}[%zu][%zu] is %g, expected %g",
+                  row, col, m[row][col], expected[row][col]);
         }
     }
 }
@@ -192,36 +177,34 @@ void test_list_constructor_fills_rows_in_order() {
 void test_list_constructor_row_and_column_vectors() {
     Matrix row{{1, 2, 3, 4}};
     CHECK(row.rows() == 1 && row.cols() == 4, "{{1, 2, 3, 4}} is %zu x %zu", row.rows(), row.cols());
-    CHECK(row.at(0, 3) == 4, "{{1, 2, 3, 4}}.at(0, 3) is %g, expected 4", row.at(0, 3));
+    CHECK(row[0][3] == 4, "{{1, 2, 3, 4}}[0][3] is %g, expected 4", row[0][3]);
 
     Matrix column{{1}, {2}, {3}};
     CHECK(column.rows() == 3 && column.cols() == 1, "{{1}, {2}, {3}} is %zu x %zu",
           column.rows(), column.cols());
-    CHECK(column.at(2, 0) == 3, "{{1}, {2}, {3}}.at(2, 0) is %g, expected 3", column.at(2, 0));
+    CHECK(column[2][0] == 3, "{{1}, {2}, {3}}[2][0] is %g, expected 3", column[2][0]);
 }
 
 void test_list_constructor_single_entry() {
     Matrix m{{-7.5}};
     CHECK(m.rows() == 1 && m.cols() == 1, "{{-7.5}} is %zu x %zu", m.rows(), m.cols());
-    CHECK(m.at(0, 0) == -7.5, "{{-7.5}}.at(0, 0) is %g, expected -7.5", m.at(0, 0));
+    CHECK(m[0][0] == -7.5, "{{-7.5}}[0][0] is %g, expected -7.5", m[0][0]);
 }
 
 void test_list_constructor_keeps_fractions() {
     Matrix m{{0.1, -0.25}, {1e-300, -1e300}};
-    CHECK(m.at(0, 0) == 0.1, "stored 0.1, read %g", m.at(0, 0));
-    CHECK(m.at(0, 1) == -0.25, "stored -0.25, read %g", m.at(0, 1));
-    CHECK(m.at(1, 0) == 1e-300, "stored 1e-300, read %g", m.at(1, 0));
-    CHECK(m.at(1, 1) == -1e300, "stored -1e300, read %g", m.at(1, 1));
+    CHECK(m[0][0] == 0.1, "stored 0.1, read %g", m[0][0]);
+    CHECK(m[0][1] == -0.25, "stored -0.25, read %g", m[0][1]);
+    CHECK(m[1][0] == 1e-300, "stored 1e-300, read %g", m[1][0]);
+    CHECK(m[1][1] == -1e300, "stored -1e300, read %g", m[1][1]);
 }
 
 void test_list_built_matrix_can_change() {
     Matrix m{{1, 2}, {3, 4}};
-    m.at(0, 1) = 9;
+    m[0][1] = 9;
 
-    CHECK(m.at(0, 1) == 9, "after writing 9 to (0, 1), it reads %g", m.at(0, 1));
-    CHECK(m.at(0, 0) == 1 && m.at(1, 0) == 3 && m.at(1, 1) == 4, "writing (0, 1) changed another entry");
-    CHECK_THROWS(std::out_of_range, m.at(2, 0));
-    CHECK_THROWS(std::out_of_range, m.at(0, 2));
+    CHECK(m[0][1] == 9, "after writing 9 to (0, 1), it reads %g", m[0][1]);
+    CHECK(m[0][0] == 1 && m[1][0] == 3 && m[1][1] == 4, "writing (0, 1) changed another entry");
 }
 
 void test_list_constructor_rejects_empty_input() {
@@ -255,7 +238,7 @@ void test_equal_matrices_built_differently() {
     Matrix built{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
     Matrix written_diagonal(3, 3);
     for (std::size_t i = 0; i < 3; i++) {
-        written_diagonal.at(i, i) = 1;
+        written_diagonal[i][i] = 1;
     }
     CHECK(built == written_diagonal, "{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}} should equal a 3 x 3 zero matrix with 1s written on the diagonal");
 
@@ -264,10 +247,10 @@ void test_equal_matrices_built_differently() {
     CHECK(zeros == listed, "Matrix(2, 2) should equal {{0, 0}, {0, 0}}");
 
     Matrix written(2, 2);
-    written.at(0, 1) = 3;
-    written.at(1, 0) = -1;
+    written[0][1] = 3;
+    written[1][0] = -1;
     Matrix expected{{0, 3}, {-1, 0}};
-    CHECK(written == expected, "a matrix filled with at() should equal the same entries written as a list");
+    CHECK(written == expected, "a matrix filled with [r][c] should equal the same entries written as a list");
 }
 
 void test_one_different_entry_makes_unequal() {
@@ -276,7 +259,7 @@ void test_one_different_entry_makes_unequal() {
     for (std::size_t row = 0; row < 2; row++) {
         for (std::size_t col = 0; col < 3; col++) {
             Matrix changed{{1, 2, 3}, {4, 5, 6}};
-            changed.at(row, col) += 0.5;
+            changed[row][col] += 0.5;
             CHECK(!(base == changed), "matrices that differ only at (%zu, %zu) compared equal", row, col);
             CHECK(!(changed == base), "matrices that differ only at (%zu, %zu) compared equal", row, col);
         }
@@ -322,8 +305,8 @@ void test_comparison_leaves_matrices_unchanged() {
     Matrix b{{1, 2}, {3, 5}};
     (void)(a == b);
 
-    CHECK(a.rows() == 2 && a.cols() == 2 && a.at(1, 1) == 4, "comparing changed the left matrix");
-    CHECK(b.rows() == 2 && b.cols() == 2 && b.at(1, 1) == 5, "comparing changed the right matrix");
+    CHECK(a.rows() == 2 && a.cols() == 2 && a[1][1] == 4, "comparing changed the left matrix");
+    CHECK(b.rows() == 2 && b.cols() == 2 && b[1][1] == 5, "comparing changed the right matrix");
 }
 
 void test_add() {
@@ -406,8 +389,8 @@ void test_sum_is_a_separate_matrix() {
     Matrix b{{10, 20}, {30, 40}};
     Matrix sum = a + b;
 
-    sum.at(0, 0) = 100;
-    CHECK(a.at(0, 0) == 1 && b.at(0, 0) == 10, "changing the sum changed one of the operands");
+    sum[0][0] = 100;
+    CHECK(a[0][0] == 1 && b[0][0] == 10, "changing the sum changed one of the operands");
 }
 
 void test_large_add_and_subtract() {
@@ -419,10 +402,10 @@ void test_large_add_and_subtract() {
 
     for (std::size_t row = 0; row < n; row++) {
         for (std::size_t col = 0; col < n; col++) {
-            a.at(row, col) = row * 3.0 + col;
-            b.at(row, col) = col * 2.0 - row;
-            sum.at(row, col) = row * 2.0 + col * 3.0;
-            difference.at(row, col) = row * 4.0 - col;
+            a[row][col] = row * 3.0 + col;
+            b[row][col] = col * 2.0 - row;
+            sum[row][col] = row * 2.0 + col * 3.0;
+            difference[row][col] = row * 4.0 - col;
         }
     }
 
@@ -528,12 +511,12 @@ void test_scaled_matrix_is_separate() {
     Matrix m{{1, 2}, {3, 4}};
 
     Matrix left = 2 * m;
-    left.at(0, 0) = 100;
-    CHECK(m.at(0, 0) == 1, "changing 2 * m changed m");
+    left[0][0] = 100;
+    CHECK(m[0][0] == 1, "changing 2 * m changed m");
 
     Matrix right = m * 2;
-    right.at(1, 1) = 100;
-    CHECK(m.at(1, 1) == 4, "changing m * 2 changed m");
+    right[1][1] = 100;
+    CHECK(m[1][1] == 4, "changing m * 2 changed m");
 }
 
 void test_large_scalar_multiplication() {
@@ -543,8 +526,8 @@ void test_large_scalar_multiplication() {
 
     for (std::size_t row = 0; row < n; row++) {
         for (std::size_t col = 0; col < n; col++) {
-            m.at(row, col) = row * 3.0 - col;
-            expected.at(row, col) = row * -1.5 + col * 0.5;
+            m[row][col] = row * 3.0 - col;
+            expected[row][col] = row * -1.5 + col * 0.5;
         }
     }
 
@@ -615,8 +598,8 @@ void test_transpose_is_separate() {
     Matrix m{{1, 2}, {3, 4}};
     Matrix t = transpose(m);
 
-    t.at(0, 1) = 100;
-    CHECK(m.at(0, 1) == 2 && m.at(1, 0) == 3, "changing the transpose changed the original");
+    t[0][1] = 100;
+    CHECK(m[0][1] == 2 && m[1][0] == 3, "changing the transpose changed the original");
 }
 
 void test_large_transpose() {
@@ -625,7 +608,7 @@ void test_large_transpose() {
     Matrix m(rows, cols);
     for (std::size_t row = 0; row < rows; row++) {
         for (std::size_t col = 0; col < cols; col++) {
-            m.at(row, col) = row * 1000.0 + col;
+            m[row][col] = row * 1000.0 + col;
         }
     }
 
@@ -635,8 +618,8 @@ void test_large_transpose() {
     for (std::size_t row = 0; row < cols; row++) {
         for (std::size_t col = 0; col < rows; col++) {
             double expected = col * 1000.0 + row;
-            CHECK(t.at(row, col) == expected, "transpose.at(%zu, %zu) is %g, expected %g",
-                  row, col, t.at(row, col), expected);
+            CHECK(t[row][col] == expected, "transpose[%zu][%zu] is %g, expected %g",
+                  row, col, t[row][col], expected);
         }
     }
 }
@@ -646,7 +629,7 @@ Matrix product_by_definition(const Matrix& a, const Matrix& b) {
     for (std::size_t row = 0; row < a.rows(); row++) {
         for (std::size_t col = 0; col < b.cols(); col++) {
             for (std::size_t k = 0; k < a.cols(); k++) {
-                product.at(row, col) += a.at(row, k) * b.at(k, col);
+                product[row][col] += a[row][k] * b[k][col];
             }
         }
     }
@@ -774,9 +757,9 @@ void test_product_is_separate() {
     Matrix i{{1, 0}, {0, 1}};
     Matrix product = a * i;
 
-    product.at(0, 0) = 100;
-    CHECK(a.at(0, 0) == 1, "changing a * identity changed a");
-    CHECK(i.at(0, 0) == 1, "changing a * identity changed the identity matrix");
+    product[0][0] = 100;
+    CHECK(a[0][0] == 1, "changing a * identity changed a");
+    CHECK(i[0][0] == 1, "changing a * identity changed the identity matrix");
 }
 
 void test_large_multiply() {
@@ -788,12 +771,12 @@ void test_large_multiply() {
     Matrix b(inner, cols);
     for (std::size_t row = 0; row < rows; row++) {
         for (std::size_t k = 0; k < inner; k++) {
-            a.at(row, k) = static_cast<double>((row * 7 + k * 3) % 11) - 5;
+            a[row][k] = static_cast<double>((row * 7 + k * 3) % 11) - 5;
         }
     }
     for (std::size_t k = 0; k < inner; k++) {
         for (std::size_t col = 0; col < cols; col++) {
-            b.at(k, col) = static_cast<double>((k * 5 + col * 2) % 13) - 6;
+            b[k][col] = static_cast<double>((k * 5 + col * 2) % 13) - 6;
         }
     }
 
@@ -817,18 +800,10 @@ void test_const_matrix_can_be_read() {
     const Matrix& view = m;
 
     CHECK(view.rows() == 2 && view.cols() == 3, "a const view of a 2 x 3 matrix is %zu x %zu", view.rows(), view.cols());
-    CHECK(view.at(0, 0) == 1 && view.at(1, 2) == 6, "reading through a const view gave the wrong entries");
+    CHECK(view[0][0] == 1 && view[1][2] == 6, "reading through a const view gave the wrong entries");
 
-    m.at(1, 2) = 9;
-    CHECK(view.at(1, 2) == 9, "a const view should see changes made through the matrix itself; read %g", view.at(1, 2));
-}
-
-void test_const_at_rejects_out_of_range_indexes() {
-    const Matrix m(2, 3);
-    CHECK_THROWS(std::out_of_range, m.at(2, 0));
-    CHECK_THROWS(std::out_of_range, m.at(0, 3));
-    CHECK_THROWS(std::out_of_range, m.at(2, 3));
-    CHECK_THROWS(std::out_of_range, m.at(100, 0));
+    m[1][2] = 9;
+    CHECK(view[1][2] == 9, "a const view should see changes made through the matrix itself; read %g", view[1][2]);
 }
 
 void test_operations_take_const_references() {
@@ -884,12 +859,11 @@ const Test kTests[] = {
     {"large shape", test_large_shape},
     {"rejects zero rows or columns", test_rejects_zero_rows_or_columns},
     {"new entries are zero", test_new_entries_are_zero},
-    {"at writes and reads entries", test_at_writes_and_reads_entries},
-    {"at returns a reference", test_at_returns_a_reference},
+    {"index writes and reads entries", test_index_writes_and_reads_entries},
+    {"index returns a reference", test_index_returns_a_reference},
     {"every entry is separate", test_every_entry_is_separate},
     {"row and column vector entries", test_row_and_column_vector_entries},
     {"entries keep fractions and extremes", test_entries_keep_fractions_and_extremes},
-    {"at rejects out-of-range indexes", test_at_rejects_out_of_range_indexes},
     {"list constructor sets shape", test_list_constructor_sets_shape},
     {"list constructor fills rows in order", test_list_constructor_fills_rows_in_order},
     {"list constructor row and column vectors", test_list_constructor_row_and_column_vectors},
@@ -951,7 +925,6 @@ const Test kTests[] = {
     {"large multiply", test_large_multiply},
     {"multiply rejects mismatched shapes", test_multiply_rejects_mismatched_shapes},
     {"const matrix can be read", test_const_matrix_can_be_read},
-    {"const at rejects out-of-range indexes", test_const_at_rejects_out_of_range_indexes},
     {"operations take const references", test_operations_take_const_references},
     {"operations on const matrices", test_operations_on_const_matrices},
 };
