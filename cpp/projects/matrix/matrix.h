@@ -21,6 +21,12 @@ public:
     double& at(std::size_t row, std::size_t col); 
 
     double at(std::size_t row, std::size_t col) const; 
+    
+    Matrix& operator+=(const Matrix& B); 
+
+    Matrix& operator-=(const Matrix& B);
+
+    Matrix& operator*=(double t); 
 };
 
 bool operator==(const Matrix& A, const Matrix& B); 

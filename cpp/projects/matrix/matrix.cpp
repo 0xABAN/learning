@@ -66,78 +66,71 @@ bool operator==(const Matrix& A, const Matrix& B) {
     return true;
 }
 
-Matrix operator+(const Matrix& A, const Matrix& B) {
-    size_t m = A.rows(); 
-    size_t n = A.cols(); 
-    
+Matrix& Matrix::operator+=(const Matrix& B) {    
+    size_t m = rows(); 
+    size_t n = cols(); 
+
     if(m != B.rows() || n != B.cols()) {
-        throw std::invalid_argument("bruh");
+        throw std::invalid_argument("matrices need to be same size");
     }
-    
-    Matrix res(m, n); 
+
     for(size_t r = 0; r < m; r++) {
         for(size_t c = 0; c < n; c++) {
-            res.at(r, c) = A.at(r, c) + B.at(r, c);
+            at(r, c) += B.at(r, c); 
         }
     }
-    return res; 
+
+    return *this; 
+}
+
+Matrix operator+(const Matrix& A, const Matrix& B) {
+    Matrix res = A; 
+    return res += B; 
+}
+
+Matrix& Matrix::operator-=(const Matrix& B) {    
+    size_t m = rows(); 
+    size_t n = cols(); 
+
+    if(m != B.rows() || n != B.cols()) {
+        throw std::invalid_argument("matrices need to be same size");
+    }
+
+    for(size_t r = 0; r < m; r++) {
+        for(size_t c = 0; c < n; c++) {
+            at(r, c) -= B.at(r, c); 
+        }
+    }
+
+    return *this; 
 }
 
 Matrix operator-(const Matrix& A, const Matrix& B) {
-    size_t m = A.rows(); 
-    size_t n = A.cols(); 
-    
-    if(m != B.rows() || n != B.cols()) {
-        throw std::invalid_argument("bruh");
-    }
-    
-    Matrix res(m, n); 
+    Matrix res = A; 
+    return res -= B; 
+}
+
+Matrix& Matrix::operator*=(double t) {
+    size_t m = rows(); 
+    size_t n = cols(); 
+
     for(size_t r = 0; r < m; r++) {
         for(size_t c = 0; c < n; c++) {
-            res.at(r, c) = A.at(r, c) - B.at(r, c);
+            at(r, c) *= t;
         }
     }
-    return res; 
+    
+    return *this; 
 }
 
 Matrix operator*(const Matrix& M, double t) {
-    size_t m = M.rows();
-    size_t n = M.cols(); 
-    
-    Matrix res(m, n); 
-    for(size_t r = 0; r < m; r++) {
-        for(size_t c = 0; c < n; c++) {
-            res.at(r, c) = M.at(r, c) * t;  
-        }
-    }
-    return res; 
+    Matrix res = M; 
+    return res *= t; 
 }
 
 Matrix operator*(double t, const Matrix& M) {
-    size_t m = M.rows();
-    size_t n = M.cols(); 
-    
-    Matrix res(m, n); 
-    for(size_t r = 0; r < m; r++) {
-        for(size_t c = 0; c < n; c++) {
-            res.at(r, c) = M.at(r, c) * t;  
-        }
-    }
-    return res; 
-}
-
-Matrix transpose(const Matrix& M) {
-    size_t m = M.rows();
-    size_t n = M.cols(); 
-    Matrix res(n, m); 
-
-    for(size_t r = 0; r < m; r++) {
-        for(size_t c = 0; c < n; c++) {
-            res.at(c, r) = M.at(r, c);
-        }
-    }
-
-    return res; 
+    Matrix res = M; 
+    return res *= t; 
 }
 
 Matrix operator*(const Matrix& A, const Matrix& B) {
@@ -157,6 +150,20 @@ Matrix operator*(const Matrix& A, const Matrix& B) {
                res.at(i, j) += A.at(i, k) * B.at(k, j);  
             }
         } 
+    }
+
+    return res; 
+}
+
+Matrix transpose(const Matrix& M) {
+    size_t m = M.rows();
+    size_t n = M.cols(); 
+    Matrix res(n, m); 
+
+    for(size_t r = 0; r < m; r++) {
+        for(size_t c = 0; c < n; c++) {
+            res.at(c, r) = M.at(r, c);
+        }
     }
 
     return res; 
