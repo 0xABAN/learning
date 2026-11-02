@@ -28,7 +28,6 @@
         CHECK(threw_expected, "%s should throw %s", #__VA_ARGS__, #exception_type); \
     } while (0)
 
-using linalg::identity;
 using linalg::Matrix;
 
 namespace {
@@ -225,64 +224,6 @@ void test_list_constructor_rejects_ragged_rows() {
     CHECK_THROWS(std::invalid_argument, Matrix{{1, 2}, {3, 4}, {5, 6, 7}});
 }
 
-void test_identity_shape() {
-    Matrix i3 = identity(3);
-    CHECK(i3.rows() == 3 && i3.cols() == 3, "identity(3) is %zu x %zu", i3.rows(), i3.cols());
-
-    Matrix i1 = identity(1);
-    CHECK(i1.rows() == 1 && i1.cols() == 1, "identity(1) is %zu x %zu", i1.rows(), i1.cols());
-}
-
-void test_identity_entries() {
-    Matrix i3 = identity(3);
-    for (std::size_t row = 0; row < 3; row++) {
-        for (std::size_t col = 0; col < 3; col++) {
-            double expected = row == col ? 1 : 0;
-            CHECK(i3.at(row, col) == expected, "identity(3).at(%zu, %zu) is %g, expected %g",
-                  row, col, i3.at(row, col), expected);
-        }
-    }
-
-    Matrix i1 = identity(1);
-    CHECK(i1.at(0, 0) == 1, "identity(1).at(0, 0) is %g, expected 1", i1.at(0, 0));
-}
-
-void test_large_identity() {
-    const std::size_t n = 200;
-    Matrix m = identity(n);
-    CHECK(m.rows() == n && m.cols() == n, "identity(200) is %zu x %zu", m.rows(), m.cols());
-
-    for (std::size_t row = 0; row < n; row++) {
-        for (std::size_t col = 0; col < n; col++) {
-            double expected = row == col ? 1 : 0;
-            CHECK(m.at(row, col) == expected, "identity(200).at(%zu, %zu) is %g, expected %g",
-                  row, col, m.at(row, col), expected);
-        }
-    }
-}
-
-void test_identity_can_change() {
-    Matrix m = identity(2);
-    m.at(0, 1) = 5;
-    m.at(1, 1) = -3;
-
-    CHECK(m.at(0, 1) == 5 && m.at(1, 1) == -3, "writing to an identity matrix didn't stick");
-    CHECK(m.at(0, 0) == 1 && m.at(1, 0) == 0, "writing two entries changed another one");
-
-    Matrix fresh = identity(2);
-    CHECK(fresh.at(0, 1) == 0 && fresh.at(1, 1) == 1, "changing one identity matrix changed a later one");
-}
-
-void test_identity_rejects_bad_indexes() {
-    Matrix m = identity(2);
-    CHECK_THROWS(std::out_of_range, m.at(2, 0));
-    CHECK_THROWS(std::out_of_range, m.at(0, 2));
-}
-
-void test_identity_rejects_zero_size() {
-    CHECK_THROWS(std::invalid_argument, identity(0));
-}
-
 void test_equal_matrices_compare_equal() {
     Matrix a{{1, 2, 3}, {4, 5, 6}};
     Matrix b{{1, 2, 3}, {4, 5, 6}};
@@ -297,8 +238,11 @@ void test_equal_matrices_compare_equal() {
 
 void test_equal_matrices_built_differently() {
     Matrix built{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-    Matrix i3 = identity(3);
-    CHECK(built == i3, "{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}} should equal identity(3)");
+    Matrix written_diagonal(3, 3);
+    for (std::size_t i = 0; i < 3; i++) {
+        written_diagonal.at(i, i) = 1;
+    }
+    CHECK(built == written_diagonal, "{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}} should equal a 3 x 3 zero matrix with 1s written on the diagonal");
 
     Matrix zeros(2, 2);
     Matrix listed{{0, 0}, {0, 0}};
@@ -629,8 +573,8 @@ void test_transpose_twice_gives_original() {
 }
 
 void test_symmetric_matrices_are_their_own_transpose() {
-    Matrix i4 = identity(4);
-    CHECK(transpose(i4) == i4, "transpose of identity(4) should be identity(4)");
+    Matrix diagonal{{3, 0, 0, 0}, {0, -1, 0, 0}, {0, 0, 0.5, 0}, {0, 0, 0, 2}};
+    CHECK(transpose(diagonal) == diagonal, "a diagonal matrix should equal its transpose");
 
     Matrix symmetric{{1, 2, 3}, {2, 5, 6}, {3, 6, 9}};
     CHECK(transpose(symmetric) == symmetric, "a symmetric matrix should equal its transpose");
@@ -680,76 +624,6 @@ void test_large_transpose() {
                   row, col, t.at(row, col), expected);
         }
     }
-}
-
-void test_trace_of_square_matrices() {
-    Matrix two{{1, 2}, {3, 4}};
-    CHECK(trace(two) == 5, "trace({{1, 2}, {3, 4}}) is %g, expected 5", trace(two));
-
-    Matrix three{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-    CHECK(trace(three) == 15, "trace({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) is %g, expected 15", trace(three));
-
-    Matrix four{{2, 9, 9, 9}, {9, -3, 9, 9}, {9, 9, 0.5, 9}, {9, 9, 9, 10}};
-    CHECK(trace(four) == 9.5, "trace of a 4 x 4 matrix with diagonal 2, -3, 0.5, 10 is %g, expected 9.5",
-          trace(four));
-}
-
-void test_trace_single_entry() {
-    CHECK(trace(Matrix{{-7.5}}) == -7.5, "trace({{-7.5}}) is %g, expected -7.5", trace(Matrix{{-7.5}}));
-}
-
-void test_trace_of_identity_and_zeros() {
-    CHECK(trace(identity(1)) == 1, "trace(identity(1)) is %g, expected 1", trace(identity(1)));
-    CHECK(trace(identity(5)) == 5, "trace(identity(5)) is %g, expected 5", trace(identity(5)));
-    CHECK(trace(Matrix(3, 3)) == 0, "trace of a 3 x 3 zero matrix is %g, expected 0", trace(Matrix(3, 3)));
-}
-
-void test_trace_ignores_entries_off_the_diagonal() {
-    Matrix m{{1, 100, 100}, {-100, 2, 100}, {100, -100, 3}};
-    CHECK(trace(m) == 6, "trace should only add the diagonal; got %g, expected 6", trace(m));
-
-    Matrix negative_diagonal{{-1, 5}, {5, -4}};
-    CHECK(trace(negative_diagonal) == -5, "trace({{-1, 5}, {5, -4}}) is %g, expected -5",
-          trace(negative_diagonal));
-}
-
-void test_trace_with_add_scale_and_transpose() {
-    Matrix a{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-    Matrix b{{-2, 0, 1}, {3, 0.5, 8}, {1, 1, 4}};
-
-    CHECK(trace(a + b) == trace(a) + trace(b), "trace(a + b) should equal trace(a) + trace(b)");
-    CHECK(trace(a - b) == trace(a) - trace(b), "trace(a - b) should equal trace(a) - trace(b)");
-    CHECK(trace(3 * a) == 3 * trace(a), "trace(3 * a) should equal 3 * trace(a)");
-    CHECK(trace(transpose(a)) == trace(a), "trace(transpose(a)) should equal trace(a)");
-}
-
-void test_trace_leaves_matrix_unchanged() {
-    Matrix m{{1, 2}, {3, 4}};
-    Matrix before{{1, 2}, {3, 4}};
-
-    (void)trace(m);
-    CHECK(m == before, "trace(m) changed m");
-}
-
-void test_large_trace() {
-    const std::size_t n = 200;
-    Matrix m(n, n);
-    for (std::size_t row = 0; row < n; row++) {
-        for (std::size_t col = 0; col < n; col++) {
-            m.at(row, col) = row == col ? static_cast<double>(row) : 1000;
-        }
-    }
-
-    double expected = (n - 1) * n / 2.0;
-    CHECK(trace(m) == expected, "trace of a 200 x 200 matrix with diagonal 0..199 is %g, expected %g",
-          trace(m), expected);
-}
-
-void test_trace_rejects_non_square() {
-    CHECK_THROWS(std::invalid_argument, trace(Matrix(2, 3)));
-    CHECK_THROWS(std::invalid_argument, trace(Matrix(3, 2)));
-    CHECK_THROWS(std::invalid_argument, trace(Matrix(1, 4)));
-    CHECK_THROWS(std::invalid_argument, trace(Matrix(4, 1)));
 }
 
 Matrix product_by_definition(Matrix a, Matrix b) {
@@ -821,12 +695,15 @@ void test_multiply_single_entries() {
 }
 
 void test_multiply_by_identity() {
+    Matrix i2{{1, 0}, {0, 1}};
+    Matrix i3{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+
     Matrix a{{1, 2, 3}, {4, 5, 6}};
-    CHECK(identity(2) * a == a, "identity(2) * a should equal a for a 2 x 3 matrix a");
-    CHECK(a * identity(3) == a, "a * identity(3) should equal a for a 2 x 3 matrix a");
+    CHECK(i2 * a == a, "identity(2) * a should equal a for a 2 x 3 matrix a");
+    CHECK(a * i3 == a, "a * identity(3) should equal a for a 2 x 3 matrix a");
 
     Matrix square{{2, -1}, {0.5, 3}};
-    CHECK(square * identity(2) == square && identity(2) * square == square,
+    CHECK(square * i2 == square && i2 * square == square,
           "multiplying by identity(2) on either side should leave a 2 x 2 matrix unchanged");
 }
 
@@ -879,7 +756,7 @@ void test_multiply_leaves_operands_unchanged() {
 
 void test_product_is_separate() {
     Matrix a{{1, 2}, {3, 4}};
-    Matrix i = identity(2);
+    Matrix i{{1, 0}, {0, 1}};
     Matrix product = a * i;
 
     product.at(0, 0) = 100;
@@ -946,12 +823,6 @@ const Test kTests[] = {
     {"list-built matrix can change", test_list_built_matrix_can_change},
     {"list constructor rejects empty input", test_list_constructor_rejects_empty_input},
     {"list constructor rejects ragged rows", test_list_constructor_rejects_ragged_rows},
-    {"identity shape", test_identity_shape},
-    {"identity entries", test_identity_entries},
-    {"large identity", test_large_identity},
-    {"identity can change", test_identity_can_change},
-    {"identity rejects bad indexes", test_identity_rejects_bad_indexes},
-    {"identity rejects zero size", test_identity_rejects_zero_size},
     {"equal matrices compare equal", test_equal_matrices_compare_equal},
     {"equal matrices built differently", test_equal_matrices_built_differently},
     {"one different entry makes unequal", test_one_different_entry_makes_unequal},
@@ -991,14 +862,6 @@ const Test kTests[] = {
     {"transpose leaves matrix unchanged", test_transpose_leaves_matrix_unchanged},
     {"transpose is separate", test_transpose_is_separate},
     {"large transpose", test_large_transpose},
-    {"trace of square matrices", test_trace_of_square_matrices},
-    {"trace single entry", test_trace_single_entry},
-    {"trace of identity and zeros", test_trace_of_identity_and_zeros},
-    {"trace ignores entries off the diagonal", test_trace_ignores_entries_off_the_diagonal},
-    {"trace with add, scale and transpose", test_trace_with_add_scale_and_transpose},
-    {"trace leaves matrix unchanged", test_trace_leaves_matrix_unchanged},
-    {"large trace", test_large_trace},
-    {"trace rejects non-square", test_trace_rejects_non_square},
     {"multiply square", test_multiply_square},
     {"multiply non-square", test_multiply_non_square},
     {"multiply row and column vectors", test_multiply_row_and_column_vectors},

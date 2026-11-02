@@ -118,16 +118,6 @@ Matrix operator*(double t, Matrix mat_a) {
     return res; 
 }
 
-Matrix identity(std::size_t n) {
-    Matrix mat(n, n); 
-    
-    for(std::size_t i = 0; i < n; i++) {
-        mat.at(i, i) = 1;  
-    }
-    
-    return mat; 
-}
-
 Matrix transpose(Matrix mat) {
     std::size_t m = mat.rows();
     std::size_t n = mat.cols(); 
@@ -140,19 +130,6 @@ Matrix transpose(Matrix mat) {
     }
 
     return res; 
-}
-
-double trace(Matrix mat) {
-    std::size_t n = mat.rows();
-    if(n != mat.cols()) {
-        throw std::invalid_argument("dont u know traces require square matrices??"); 
-    }
-    
-    double ans = 0; 
-    for(std::size_t i = 0; i < n; i++) {
-        ans += mat.at(i, i);  
-    } 
-    return ans; 
 }
 
 Matrix operator*(Matrix mat_a, Matrix mat_b) {
