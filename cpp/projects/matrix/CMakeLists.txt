@@ -13,3 +13,6 @@ target_include_directories(matrix PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(matrix_tests matrix_tests.cpp)
 target_link_libraries(matrix_tests PRIVATE matrix)
+
+add_executable(playground main.cpp) 
+target_link_libraries(playground PRIVATE matrix) 
