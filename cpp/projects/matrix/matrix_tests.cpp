@@ -1,5 +1,6 @@
 #include "matrix.h"
 
+#include <concepts>
 #include <cstddef>
 #include <cstdio>
 #include <exception>
@@ -33,6 +34,20 @@ using linalg::Matrix;
 namespace {
 
 bool test_failed;
+
+template <typename M>
+concept readable_through_const = requires(const M& m) {
+    { m.rows() } -> std::convertible_to<std::size_t>;
+    { m.cols() } -> std::convertible_to<std::size_t>;
+    { m.at(0, 0) } -> std::convertible_to<double>;
+};
+
+template <typename M>
+concept writable_through_at = requires(M& m) { m.at(0, 0) = 1.0; };
+
+static_assert(readable_through_const<Matrix>, "rows(), cols() and at() should work on a const Matrix");
+static_assert(writable_through_at<Matrix>, "at() on a Matrix should still return a reference you can write through");
+static_assert(!writable_through_at<const Matrix>, "at() on a const Matrix must not allow writing");
 
 void test_reports_its_shape() {
     Matrix m(2, 3);
@@ -626,7 +641,7 @@ void test_large_transpose() {
     }
 }
 
-Matrix product_by_definition(Matrix a, Matrix b) {
+Matrix product_by_definition(const Matrix& a, const Matrix& b) {
     Matrix product(a.rows(), b.cols());
     for (std::size_t row = 0; row < a.rows(); row++) {
         for (std::size_t col = 0; col < b.cols(); col++) {
@@ -797,6 +812,66 @@ void test_multiply_rejects_mismatched_shapes() {
     CHECK_THROWS(std::invalid_argument, Matrix(2, 3) * Matrix(4, 2));
 }
 
+void test_const_matrix_can_be_read() {
+    Matrix m{{1, 2, 3}, {4, 5, 6}};
+    const Matrix& view = m;
+
+    CHECK(view.rows() == 2 && view.cols() == 3, "a const view of a 2 x 3 matrix is %zu x %zu", view.rows(), view.cols());
+    CHECK(view.at(0, 0) == 1 && view.at(1, 2) == 6, "reading through a const view gave the wrong entries");
+
+    m.at(1, 2) = 9;
+    CHECK(view.at(1, 2) == 9, "a const view should see changes made through the matrix itself; read %g", view.at(1, 2));
+}
+
+void test_const_at_rejects_out_of_range_indexes() {
+    const Matrix m(2, 3);
+    CHECK_THROWS(std::out_of_range, m.at(2, 0));
+    CHECK_THROWS(std::out_of_range, m.at(0, 3));
+    CHECK_THROWS(std::out_of_range, m.at(2, 3));
+    CHECK_THROWS(std::out_of_range, m.at(100, 0));
+}
+
+void test_operations_take_const_references() {
+    bool (*equal)(const Matrix&, const Matrix&) = linalg::operator==;
+    Matrix (*add)(const Matrix&, const Matrix&) = linalg::operator+;
+    Matrix (*subtract)(const Matrix&, const Matrix&) = linalg::operator-;
+    Matrix (*scale_right)(const Matrix&, double) = linalg::operator*;
+    Matrix (*scale_left)(double, const Matrix&) = linalg::operator*;
+    Matrix (*multiply)(const Matrix&, const Matrix&) = linalg::operator*;
+    Matrix (*transposed)(const Matrix&) = linalg::transpose;
+
+    const Matrix a{{1, 2}, {3, 4}};
+    const Matrix b{{5, 6}, {7, 8}};
+
+    Matrix sum{{6, 8}, {10, 12}};
+    Matrix difference{{-4, -4}, {-4, -4}};
+    Matrix doubled{{2, 4}, {6, 8}};
+    Matrix product{{19, 22}, {43, 50}};
+    Matrix flipped{{1, 3}, {2, 4}};
+
+    CHECK(equal(a, a) && !equal(a, b), "== through const references gave the wrong answer");
+    CHECK(add(a, b) == sum, "+ through const references gave the wrong sum");
+    CHECK(subtract(a, b) == difference, "- through const references gave the wrong difference");
+    CHECK(scale_right(a, 2) == doubled && scale_left(2, a) == doubled, "scaling through const references is wrong");
+    CHECK(multiply(a, b) == product, "* through const references gave the wrong product");
+    CHECK(transposed(a) == flipped, "transpose through a const reference is wrong");
+}
+
+void test_operations_on_const_matrices() {
+    const Matrix a{{1, 2, 3}, {4, 5, 6}};
+    const Matrix b{{6, 5, 4}, {3, 2, 1}};
+
+    Matrix sum{{7, 7, 7}, {7, 7, 7}};
+    Matrix product{{28, 10}, {73, 28}};
+    Matrix flipped{{1, 4}, {2, 5}, {3, 6}};
+
+    CHECK(a + b == sum, "adding two const matrices is wrong");
+    CHECK(a - a == Matrix(2, 3), "a const matrix minus itself should be all zeros");
+    CHECK(a * transpose(b) == product, "multiplying const matrices is wrong");
+    CHECK(transpose(a) == flipped, "transposing a const matrix is wrong");
+    CHECK(a * 2 == 2 * a, "scaling a const matrix should not depend on the side");
+}
+
 struct Test {
     const char* name;
     void (*run)();
@@ -875,6 +950,10 @@ const Test kTests[] = {
     {"product is separate", test_product_is_separate},
     {"large multiply", test_large_multiply},
     {"multiply rejects mismatched shapes", test_multiply_rejects_mismatched_shapes},
+    {"const matrix can be read", test_const_matrix_can_be_read},
+    {"const at rejects out-of-range indexes", test_const_at_rejects_out_of_range_indexes},
+    {"operations take const references", test_operations_take_const_references},
+    {"operations on const matrices", test_operations_on_const_matrices},
 };
 
 }

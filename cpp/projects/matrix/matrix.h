@@ -14,24 +14,26 @@ public:
     
     Matrix(std::initializer_list<std::initializer_list<double>> rows); 
     
-    std::size_t rows(); 
+    std::size_t rows() const; 
     
-    std::size_t cols(); 
+    std::size_t cols() const; 
     
     double& at(std::size_t row, std::size_t col); 
+
+    double at(std::size_t row, std::size_t col) const; 
 };
 
-bool operator==(Matrix mat_a, Matrix mat_b); 
+bool operator==(const Matrix& A, const Matrix& B); 
 
-Matrix operator+(Matrix mat_a, Matrix mat_b); 
+Matrix operator+(const Matrix& A, const Matrix& B); 
 
-Matrix operator-(Matrix mat_a, Matrix mat_b); 
-    
-Matrix operator*(Matrix mat, double t); 
+Matrix operator-(const Matrix& A, const Matrix& B); 
 
-Matrix operator*(double m, Matrix mat);
+Matrix operator*(const Matrix& M, double t); 
 
-Matrix operator*(Matrix mat_a, Matrix mat_b); 
+Matrix operator*(double t, const Matrix& M);
 
-Matrix transpose(Matrix mat); 
+Matrix operator*(const Matrix& A, const Matrix& B); 
+
+Matrix transpose(const Matrix& M); 
 }
