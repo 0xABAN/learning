@@ -1,20 +1,22 @@
-#include <vector> 
+#pragma once
 
-using std::vector; 
+#include <cstddef>
+#include <initializer_list>
+#include <vector>
 
 namespace linalg {
 
 class Matrix {
 private: 
-    vector<vector<double>> mat; 
+    std::vector<std::vector<double>> mat; 
 public: 
     Matrix(std::size_t rows, std::size_t cols);     
     
     Matrix(std::initializer_list<std::initializer_list<double>> rows); 
     
-    size_t rows(); 
+    std::size_t rows(); 
     
-    size_t cols(); 
+    std::size_t cols(); 
     
     double& at(std::size_t row, std::size_t col); 
 };

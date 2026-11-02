@@ -1,11 +1,12 @@
 #include "matrix.h"
 #include <stdexcept>
 
-using std::vector; 
+using std::size_t;
+using std::vector;
 
 namespace linalg {
 
-Matrix::Matrix(std::size_t rows, std::size_t cols) {
+Matrix::Matrix(size_t rows, size_t cols) {
     if(rows <= 0 || cols <= 0) throw std::invalid_argument("bruh"); 
     mat = vector<vector<double>>(rows, vector<double>(cols, 0)); 
 }
@@ -34,7 +35,7 @@ size_t Matrix::cols() {
     return mat[0].size();
 }
 
-double& Matrix::at(std::size_t row, std::size_t col) {
+double& Matrix::at(size_t row, size_t col) {
     if(row < 0 || col < 0 || rows() <= row || cols() <= col) {
         throw std::out_of_range("do that shit again"); 
     }
@@ -42,13 +43,13 @@ double& Matrix::at(std::size_t row, std::size_t col) {
 }
 
 bool operator==(Matrix mat_a, Matrix mat_b) {
-    std::size_t m = mat_a.rows(); 
-    std::size_t n = mat_a.cols(); 
+    size_t m = mat_a.rows(); 
+    size_t n = mat_a.cols(); 
 
     if(m != mat_b.rows() || n != mat_b.cols()) return false; 
 
-    for(std::size_t r = 0; r < m; r++) {
-        for(std::size_t c = 0; c < n; c++) {
+    for(size_t r = 0; r < m; r++) {
+        for(size_t c = 0; c < n; c++) {
             if(mat_a.at(r, c) != mat_b.at(r, c))  {
                return false; 
             }
@@ -59,16 +60,16 @@ bool operator==(Matrix mat_a, Matrix mat_b) {
 }
 
 Matrix operator+(Matrix mat_a, Matrix mat_b) {
-    std::size_t m = mat_a.rows(); 
-    std::size_t n = mat_a.cols(); 
+    size_t m = mat_a.rows(); 
+    size_t n = mat_a.cols(); 
     
     if(m != mat_b.rows() || n != mat_b.cols()) {
         throw std::invalid_argument("bruh");
     }
     
     Matrix res(m, n); 
-    for(std::size_t r = 0; r < m; r++) {
-        for(std::size_t c = 0; c < n; c++) {
+    for(size_t r = 0; r < m; r++) {
+        for(size_t c = 0; c < n; c++) {
             res.at(r, c) = mat_a.at(r, c) + mat_b.at(r, c);
         }
     }
@@ -76,16 +77,16 @@ Matrix operator+(Matrix mat_a, Matrix mat_b) {
 }
 
 Matrix operator-(Matrix mat_a, Matrix mat_b) {
-    std::size_t m = mat_a.rows(); 
-    std::size_t n = mat_a.cols(); 
+    size_t m = mat_a.rows(); 
+    size_t n = mat_a.cols(); 
     
     if(m != mat_b.rows() || n != mat_b.cols()) {
         throw std::invalid_argument("bruh");
     }
     
     Matrix res(m, n); 
-    for(std::size_t r = 0; r < m; r++) {
-        for(std::size_t c = 0; c < n; c++) {
+    for(size_t r = 0; r < m; r++) {
+        for(size_t c = 0; c < n; c++) {
             res.at(r, c) = mat_a.at(r, c) - mat_b.at(r, c);
         }
     }
@@ -93,12 +94,12 @@ Matrix operator-(Matrix mat_a, Matrix mat_b) {
 }
 
 Matrix operator*(Matrix mat_a, double t) {
-    std::size_t m = mat_a.rows();
-    std::size_t n = mat_a.cols(); 
+    size_t m = mat_a.rows();
+    size_t n = mat_a.cols(); 
     
     Matrix res(m, n); 
-    for(std::size_t r = 0; r < m; r++) {
-        for(std::size_t c = 0; c < n; c++) {
+    for(size_t r = 0; r < m; r++) {
+        for(size_t c = 0; c < n; c++) {
             res.at(r, c) = mat_a.at(r, c) * t;  
         }
     }
@@ -106,12 +107,12 @@ Matrix operator*(Matrix mat_a, double t) {
 }
 
 Matrix operator*(double t, Matrix mat_a) {
-    std::size_t m = mat_a.rows();
-    std::size_t n = mat_a.cols(); 
+    size_t m = mat_a.rows();
+    size_t n = mat_a.cols(); 
     
     Matrix res(m, n); 
-    for(std::size_t r = 0; r < m; r++) {
-        for(std::size_t c = 0; c < n; c++) {
+    for(size_t r = 0; r < m; r++) {
+        for(size_t c = 0; c < n; c++) {
             res.at(r, c) = mat_a.at(r, c) * t;  
         }
     }
@@ -119,12 +120,12 @@ Matrix operator*(double t, Matrix mat_a) {
 }
 
 Matrix transpose(Matrix mat) {
-    std::size_t m = mat.rows();
-    std::size_t n = mat.cols(); 
+    size_t m = mat.rows();
+    size_t n = mat.cols(); 
     Matrix res(n, m); 
 
-    for(std::size_t r = 0; r < m; r++) {
-        for(std::size_t c = 0; c < n; c++) {
+    for(size_t r = 0; r < m; r++) {
+        for(size_t c = 0; c < n; c++) {
             res.at(c, r) = mat.at(r, c);
         }
     }
@@ -137,15 +138,15 @@ Matrix operator*(Matrix mat_a, Matrix mat_b) {
         throw std::invalid_argument("bruh"); 
     }
 
-    std::size_t v = mat_a.cols(); 
-    std::size_t m = mat_a.rows(); 
-    std::size_t n = mat_b.cols(); 
+    size_t v = mat_a.cols(); 
+    size_t m = mat_a.rows(); 
+    size_t n = mat_b.cols(); 
     
     Matrix res(m, n); 
 
-    for(std::size_t i = 0; i < m; i++) {
-        for(std::size_t j = 0; j < n; j++) {
-            for(std::size_t k = 0; k < v; k++) {
+    for(size_t i = 0; i < m; i++) {
+        for(size_t j = 0; j < n; j++) {
+            for(size_t k = 0; k < v; k++) {
                res.at(i, j) += mat_a.at(i, k) * mat_b.at(k, j);  
             }
         } 
