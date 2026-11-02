@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <exception>
 #include <initializer_list>
@@ -48,6 +49,15 @@ concept writable_through_index = requires(M& m) { m[0][0] = 1.0; };
 static_assert(readable_through_const<Matrix>, "rows(), cols() and [r][c] should work on a const Matrix");
 static_assert(writable_through_index<Matrix>, "[r][c] on a Matrix should return a reference you can write through");
 static_assert(!writable_through_index<const Matrix>, "[r][c] on a const Matrix must not allow writing");
+
+template <typename M>
+concept rows_can_be_resized = requires(M& m) { m[0].push_back(1.0); };
+
+static_assert(!rows_can_be_resized<Matrix>, "[r] must not hand out a resizable row; a push_back on it would make the matrix ragged");
+
+std::size_t bytes_between(const double* from, const double* to) {
+    return reinterpret_cast<std::uintptr_t>(to) - reinterpret_cast<std::uintptr_t>(from);
+}
 
 void test_reports_its_shape() {
     Matrix m(2, 3);
@@ -847,6 +857,80 @@ void test_operations_on_const_matrices() {
     CHECK(a * 2 == 2 * a, "scaling a const matrix should not depend on the side");
 }
 
+void test_rows_are_stored_back_to_back() {
+    const std::size_t shapes[][2] = {{2, 3}, {4, 5}, {3, 7}, {6, 1}, {2, 9}};
+
+    for (const auto& shape : shapes) {
+        std::size_t rows = shape[0];
+        std::size_t cols = shape[1];
+        Matrix m(rows, cols);
+        const double* first = &m[0][0];
+
+        for (std::size_t row = 0; row < rows; row++) {
+            for (std::size_t col = 0; col < cols; col++) {
+                std::size_t expected = (row * cols + col) * sizeof(double);
+                CHECK(bytes_between(first, &m[row][col]) == expected,
+                      "in a %zu x %zu matrix, entry (%zu, %zu) is %zu bytes after entry (0, 0), expected %zu; "
+                      "entries should be stored row by row in one block",
+                      rows, cols, row, col, bytes_between(first, &m[row][col]), expected);
+            }
+        }
+    }
+}
+
+void test_list_built_rows_are_stored_back_to_back() {
+    Matrix m{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    const double* first = &m[0][0];
+
+    for (std::size_t row = 0; row < 3; row++) {
+        for (std::size_t col = 0; col < 3; col++) {
+            std::size_t expected = (row * 3 + col) * sizeof(double);
+            CHECK(bytes_between(first, &m[row][col]) == expected,
+                  "in {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, entry (%zu, %zu) is %zu bytes after entry (0, 0), expected %zu",
+                  row, col, bytes_between(first, &m[row][col]), expected);
+            CHECK(*(first + row * 3 + col) == m[row][col], "the entry at offset %zu holds %g, expected %g",
+                  row * 3 + col, *(first + row * 3 + col), m[row][col]);
+        }
+    }
+}
+
+void test_const_and_non_const_index_the_same_entries() {
+    Matrix m{{1, 2, 3}, {4, 5, 6}};
+    const Matrix& view = m;
+
+    for (std::size_t row = 0; row < 2; row++) {
+        for (std::size_t col = 0; col < 3; col++) {
+            CHECK(&view[row][col] == &m[row][col], "const and non-const [%zu][%zu] refer to different entries", row, col);
+        }
+    }
+}
+
+void test_copies_and_assignments_are_independent() {
+    Matrix original{{1, 2, 3}, {4, 5, 6}};
+
+    Matrix copy = original;
+    CHECK(copy.rows() == 2 && copy.cols() == 3, "a copy of a 2 x 3 matrix is %zu x %zu", copy.rows(), copy.cols());
+    CHECK(copy == original, "a copy should have the original's entries");
+
+    copy[0][0] = 9;
+    CHECK(original[0][0] == 1, "changing a copy changed the original");
+
+    Matrix assigned(4, 1);
+    assigned = original;
+    CHECK(assigned.rows() == 2 && assigned.cols() == 3, "after assigning a 2 x 3 matrix to a 4 x 1 matrix, it is %zu x %zu",
+          assigned.rows(), assigned.cols());
+    CHECK(assigned == original, "assignment should copy every entry");
+
+    assigned[1][2] = 0;
+    CHECK(original[1][2] == 6, "changing an assigned matrix changed the original");
+
+    Matrix wide(1, 6);
+    wide = Matrix{{1}, {2}, {3}};
+    CHECK(wide.rows() == 3 && wide.cols() == 1, "after assigning a 3 x 1 matrix to a 1 x 6 matrix, it is %zu x %zu",
+          wide.rows(), wide.cols());
+    CHECK(wide[2][0] == 3, "after assigning {{1}, {2}, {3}}, entry (2, 0) is %g, expected 3", wide[2][0]);
+}
+
 struct Test {
     const char* name;
     void (*run)();
@@ -927,6 +1011,10 @@ const Test kTests[] = {
     {"const matrix can be read", test_const_matrix_can_be_read},
     {"operations take const references", test_operations_take_const_references},
     {"operations on const matrices", test_operations_on_const_matrices},
+    {"rows are stored back to back", test_rows_are_stored_back_to_back},
+    {"list-built rows are stored back to back", test_list_built_rows_are_stored_back_to_back},
+    {"const and non-const index the same entries", test_const_and_non_const_index_the_same_entries},
+    {"copies and assignments are independent", test_copies_and_assignments_are_independent},
 };
 
 }

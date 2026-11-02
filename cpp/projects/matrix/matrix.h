@@ -8,7 +8,12 @@ namespace linalg {
 
 class Matrix {
 private: 
-    std::vector<std::vector<double>> mat; 
+    std::vector<double> mat; 
+
+    std::size_t m_ = 0; 
+    std::size_t n_ = 0; 
+    std::size_t size_ = 0; 
+    
 public: 
     Matrix(std::size_t rows, std::size_t cols);     
     
@@ -17,10 +22,12 @@ public:
     std::size_t rows() const; 
     
     std::size_t cols() const; 
+
+    std::size_t size() const; 
     
-    std::vector<double>& operator[](std::size_t row); 
+    double* operator[](std::size_t row); 
     
-    const std::vector<double>& operator[](std::size_t row) const; 
+    const double* operator[](std::size_t row) const; 
     
     Matrix& operator+=(const Matrix& B); 
 
