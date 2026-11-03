@@ -1,6 +1,6 @@
 ## Lessons
 
 - When recommending a LeetCode problem: give only the problem statement (title, link, full statement, examples, constraints) & write the scaffold in the appropriate place. No commentary, hints, approach notes, or "why this one."
-- Write new LeetCode exercises and scaffolds in Python (`.py`) under the matching topic folder in `leetcode/` (e.g. `leetcode/trees/`); create a new topic folder only when none fits. Include any required imports, a `Solution` class, the problem-specific method stub with type annotations, and `main()` called through an `if __name__ == "__main__":` guard. Leave the solution unimplemented. Keep existing C++ exercises unchanged.
+- Write new LeetCode exercises and scaffolds in Python (`.py`) under the matching topic folder in `leetcode/` (e.g. `leetcode/trees/`); create a new topic folder only when none fits. Include any required imports, a `Solution` class, the problem-specific method stub with type annotations, and an empty `main()` (body `pass`) called through an `if __name__ == "__main__":` guard. Leave the solution unimplemented. Keep existing C++ exercises unchanged.
 - Never put the problem statement in the exercise file. Give it in the chat response only; the file gets at most a one-line link comment above the `Solution` class.
-- Always write your own test cases in `main()` with assertions and explicit expected results. Cover ordinary inputs and edge cases within the problem's constraints, rather than only copying its examples. Do not include hints or solution logic.
+- Never write test cases. Leave `main()` empty for the user to fill in.
