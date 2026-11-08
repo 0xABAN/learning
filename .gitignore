@@ -1,9 +1,4 @@
 # compiled binaries
-cpp/basics/hello
-cpp/basics/input
-cpp/basics/temp
-cpp/basics/grade
-cpp/basics/guess
 leetcode/**/*_single_number
 leetcode/**/01_two_sum
 *.o
