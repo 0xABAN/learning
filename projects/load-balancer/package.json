@@ -1,0 +1,12 @@
+{
+  "name": "load-balancer",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2"
+  }
+}
