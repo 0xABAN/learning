@@ -1,8 +1,15 @@
 # compiled binaries
+projects/extract_vid/extract_vid_tests
+projects/hashmap/map
+projects/vector/intvec
+*.dSYM/
 leetcode/**/*_single_number
 leetcode/**/01_two_sum
 *.o
 a.out
+
+# clangd index
+.cache/
 
 # cmake build trees
 **/build/
