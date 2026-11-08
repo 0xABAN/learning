@@ -13,7 +13,7 @@ Required
 
 Design rules (where most of the learning happens)
    - Headers declare; .cpp files define. Justify any function body in a header.
-   - No using directives or declarations in headers. Audit cpp/projects/matrix/matrix.h: it has no include guard and
+   - No using directives or declarations in headers. Audit projects/matrix/matrix.h: it has no include guard and
      puts using std::vector; at global scope, so every file that includes it inherits that name.
    - Each layer owns its parameters and gradients. No global state.
    - Decide who owns the train/eval mode, and justify it.
