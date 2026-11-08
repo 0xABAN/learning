@@ -59,14 +59,58 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <utility> 
+#include <unordered_set>
+#include <deque> 
 
 using namespace std;
 
 class Solution {
 public:
     vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
-        // TODO: implement
-        throw "not implemented";
+        unordered_map<string, vector<pair<double, string>>> g; 
+        
+        for(int i = 0; i < equations.size(); i++) {
+            string num = equations[i][0]; 
+            string div = equations[i][1]; 
+            double val = values[i]; 
+            
+            g[num].push_back({val, div}); 
+            g[div].push_back({1 / val, num}); 
+        }
+
+        auto bfs = [&g](auto&& self, auto query) -> double {
+            string start = query[0]; 
+            string end = query[1];  
+            
+            if(!g.contains(start) || !g.contains(end)) return -1.0; 
+            
+            deque<pair<double, string>> q{{1.0, start}};
+            unordered_set<string> seen{start}; 
+            
+            while (!q.empty()) {
+                auto [val, node] = q.front(); 
+                q.pop_front(); 
+
+                if(node == end) return val; 
+
+                for(const auto& [weight, next] : g[node]) {  
+                    if(!seen.contains(next)) {
+                        seen.insert(next);
+                        q.push_back({val * weight, next});
+                    }
+                }
+            } 
+
+            return -1.0; 
+        }; 
+        
+        vector<double> ans;  
+        for(vector<string> query : queries) {
+            ans.push_back(bfs(bfs, query)); 
+        }
+        return ans; 
     }
 };
 
