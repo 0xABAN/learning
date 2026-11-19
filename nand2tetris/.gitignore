@@ -1,3 +1,5 @@
 .runtime/
 *.out
 .DS_Store
+
+obj_dir/

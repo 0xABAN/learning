@@ -1,7 +1,7 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/5/CPU.hdl
+// File name: projects/5/CPU.sv
 /**
  * The Hack Central Processing unit (CPU).
  * Parses the binary code in the instruction input and executes it according to the
@@ -18,19 +18,15 @@
  * clocked: although they are affected by the instruction's execution, they commit to
  * their new values only in the next cycle.
  */
-CHIP CPU {
+module CPU(
+    input logic clk,
+    input logic [15:0] inM,
+    input logic [15:0] instruction,
+    input logic reset,
+    output logic [15:0] outM,
+    output logic writeM,
+    output logic [14:0] addressM,
+    output logic [14:0] pc
+);
 
-    IN  inM[16],         // M value input  (M = contents of RAM[A])
-        instruction[16], // Instruction for execution
-        reset;           // Signals whether to re-start the current
-                         // program (reset==1) or continue executing
-                         // the current program (reset==0).
-
-    OUT outM[16],        // M value output
-        writeM,          // Write to M? 
-        addressM[15],    // Address in data memory (of M)
-        pc[15];          // address of next instruction
-
-    PARTS:
-	//// Replace this comment with your code.
-}
+endmodule

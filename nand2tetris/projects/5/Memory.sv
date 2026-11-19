@@ -1,7 +1,7 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/5/Memory.hdl
+// File name: projects/5/Memory.sv
 /**
  * The complete address space of the Hack computer's memory,
  * including RAM and memory-mapped I/O. 
@@ -20,10 +20,12 @@
  * memory map. The behavior in these addresses is described in the Screen
  * and Keyboard chip specifications given in the lectures and the book.
  */
-CHIP Memory {
-    IN in[16], load, address[15];
-    OUT out[16];
+module Memory(
+    input logic clk,
+    input logic [15:0] in,
+    input logic load,
+    input logic [14:0] address,
+    output logic [15:0] out
+);
 
-    PARTS:
-	//// Replace this comment with your code.
-}
+endmodule
