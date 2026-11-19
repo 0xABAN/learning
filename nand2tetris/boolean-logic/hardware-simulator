@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+export JAVA_HOME="$root/.runtime/java"
+export PATH="$JAVA_HOME/bin:$PATH"
+
+exec "$root/tools/HardwareSimulator.sh" "$@"
