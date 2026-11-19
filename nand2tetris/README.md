@@ -1,4 +1,4 @@
-# Boolean Logic — Nand2Tetris Project 1
+# Nand2Tetris
 
 The official Nand2Tetris 2.7 desktop suite is installed here, with an isolated
 Eclipse Temurin 17 runtime for Apple Silicon in `.runtime/`.
@@ -6,7 +6,7 @@ Eclipse Temurin 17 runtime for Apple Silicon in `.runtime/`.
 Open the simulator:
 
 ```sh
-cd ~/dev/learning/nand2tetris/boolean-logic
+cd ~/dev/learning/nand2tetris
 ./hardware-simulator
 ```
 
