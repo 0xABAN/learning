@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+from pathlib import Path
+
+root = Path(__file__).resolve().parent
+
+if len(sys.argv) != 2:
+    sys.exit('Usage: ./test Not')
+
+name = sys.argv[1]
+tests = [path for path in (root / 'projects').rglob('*_tb.sv') if path.stem == f'{name}_tb']
+if len(tests) != 1:
+    sys.exit(f'Unknown test: {name}')
+
+command = ['verilator', '--binary', str(tests[0].relative_to(root))]
+for directory in ['1', '2', '3/a', '3/b', '5']:
+    command.extend(['-y', f'projects/{directory}'])
+command.append('+libext+.sv')
+
+print(f'Building {name}...', flush=True)
+build = subprocess.run(command, cwd=root, capture_output=True, text=True)
+if build.returncode:
+    sys.stdout.write(build.stdout)
+    sys.stderr.write(build.stderr)
+    sys.exit(build.returncode)
+
+result = subprocess.run([str(root / 'obj_dir' / f'V{name}_tb')], cwd=root)
+sys.exit(result.returncode if result.returncode >= 0 else 1)
