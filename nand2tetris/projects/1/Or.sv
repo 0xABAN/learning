@@ -6,10 +6,17 @@
  * Or gate:
  * if (a or b) out = 1, else out = 0 
  */
+
 module Or(
     input logic a,
     input logic b,
     output logic out
 );
+    logic not_a; 
+    logic not_b; 
 
+    nand(not_a, a, a); // not a 
+    nand(not_b, b, b); // not b 
+
+    nand(out, not_a, not_b); // (not a) nand (not b)
 endmodule
