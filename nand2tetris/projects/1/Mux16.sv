@@ -13,5 +13,7 @@ module Mux16(
     input logic sel,
     output logic [15:0] out
 );
+    for(genvar i = 0; i < 16; i++) 
+        Mux mux_gate(.a(a[i]), .b(b[i]), .sel(sel), .out(out[i]));
 
 endmodule
