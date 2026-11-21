@@ -12,5 +12,6 @@ module Or16(
     input logic [15:0] b,
     output logic [15:0] out
 );
-
+    for(genvar i = 0; i < 16; i++)
+        Or or_gate(.a(a[i]), .b(b[i]), .out(out[i]));
 endmodule
