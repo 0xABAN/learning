@@ -11,5 +11,6 @@ module Not16(
     input logic [15:0] in,
     output logic [15:0] out
 );
-
+    for(genvar i = 0; i < 16; i++)
+        Not inverter(.in(in[i]), .out(out[i]));
 endmodule
