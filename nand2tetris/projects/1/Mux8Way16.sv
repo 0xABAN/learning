@@ -25,5 +25,11 @@ module Mux8Way16(
     input logic [2:0] sel,
     output logic [15:0] out
 );
-
+    
+    logic [15:0] mux_abcd; 
+    logic [15:0] mux_efgh; 
+     
+    Mux4Way16 mux1(.a(a), .b(b), .c(c), .d(d), .sel(sel[1:0]), .out(mux_abcd)); 
+    Mux4Way16 mux2(.a(e), .b(f), .c(g), .d(h), .sel(sel[1:0]), .out(mux_efgh)); 
+    Mux16 mux3(.a(mux_abcd), .b(mux_efgh), .sel(sel[2]), .out(out)); 
 endmodule
