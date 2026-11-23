@@ -17,6 +17,12 @@
 * b_out = (sel and 1) 
 * b_out AND in = b; 
 *
+*
+* a = (not sel) and in 
+* b = sel and in
+*
+* 
+* 
 * */
 
 module DMux(
@@ -25,17 +31,9 @@ module DMux(
     output logic a,
     output logic b
 );
-    logic flip_sel; 
-    logic sel_matches_a; 
-    logic sel_matches_b; 
-    logic a_out; 
-    logic b_out; 
+    logic not_sel; 
     
-    Not not_sel(.in(sel), .out(flip_sel));  
-    
-    And check_a(.a(flip_sel), .b(1), .out(sel_matches_a));
-    And check_b(.a(sel), .b(1), .out(sel_matches_b));
-    
-    And get_a_output(.a(sel_matches_a), .b(in), .out(a)); 
-    And get_b_output(.a(sel_matches_b), .b(in), .out(b)); 
+    Not flip(.in(sel), .out(not_sel)); 
+    And gate_a(.a(not_sel), .b(in), .out(a)); 
+    And gate_b(.a(sel), .b(in), .out(b)); 
 endmodule

@@ -25,7 +25,6 @@ module Mux8Way16(
     input logic [2:0] sel,
     output logic [15:0] out
 );
-    
     logic [15:0] mux_abcd; 
     logic [15:0] mux_efgh; 
      
