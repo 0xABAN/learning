@@ -28,11 +28,10 @@ module DMux4Way(
     output logic d
 );
     
-    logic ab; // 1 if ab, 0 otherwise. if it's 1, it becomes the new in
-    logic cd; // 1 if cd, 0 otherwise. 
+    logic dmux_ab;
+    logic dmux_cd; 
     
-    DMux dmux1(.in(in), .sel(sel[1]), .a(ab), .b(cd));
-    
-    DMux dmux2(.in(ab), .sel(sel[0]), .a(a), .b(b)); 
-    DMux dmux3(.in(cd), .sel(sel[0]), .a(c), .b(d)); 
+    DMux dmux1(.in(in), .sel(sel[1]), .a(dmux_ab), .b(dmux_cd));
+    DMux dmux2(.in(dmux_ab), .sel(sel[0]), .a(a), .b(b)); 
+    DMux dmux3(.in(dmux_cd), .sel(sel[0]), .a(c), .b(d)); 
 endmodule

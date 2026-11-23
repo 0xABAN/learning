@@ -25,5 +25,11 @@ module DMux8Way(
     output logic g,
     output logic h
 );
+    logic dmux_abcd; // 1 if in is in abcd, 0 o.w.
+    logic dmux_efgh; 
 
+    DMux dmux1(.in(in), .sel(sel[2]), .a(dmux_abcd), .b(dmux_efgh)); 
+    
+    DMux4Way dmux2(.in(dmux_abcd), .sel(sel[1:0]), .a(a), .b(b), .c(c), .d(d));
+    DMux4Way dmux3(.in(dmux_efgh), .sel(sel[1:0]), .a(e), .b(f), .c(g), .d(h));
 endmodule
